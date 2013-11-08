@@ -1,0 +1,124 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.norconex.collectors</groupId>
+	<artifactId>norconex-committer-idol</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>Norconex Committer Autonomy</name>
+	<!-- PROPERTIES -->
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<site.baseurl />
+		<currentStableVersion>coming soon</currentStableVersion>
+	</properties>
+	<inceptionYear>2009</inceptionYear>
+	<!-- LICENSE INFORMATION -->
+	<licenses>
+		<license>
+			<name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
+		</license>
+		<license>
+			<comments>
+        Norconex provides commercial licenses for all its open-source
+        products, designed to meet the development and distribution 
+        needs of commercial distributors
+        (such as OEMs, ISVs and VARs).  Please contact Norconex
+        for a commercial license at sales@norconex.com.
+      </comments>
+			<name>Commercial License</name>
+		</license>
+	</licenses>
+	<!-- REPOSITORIES -->
+	<repositories>
+		<repository>
+			<id>norconex-release-repo</id>
+			<url>http://norconex.s3.amazonaws.com/repo/release</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>norconex-snapshot-repo</id>
+			<url>http://norconex.s3.amazonaws.com/repo/snapshot</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-configuration</groupId>
+			<artifactId>commons-configuration</artifactId>
+			<version>1.9</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+		<dependency>
+			<groupId>com.norconex.commons</groupId>
+			<artifactId>norconex-commons-lang</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.norconex.collectors</groupId>
+			<artifactId>norconex-committer</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.7</version>
+		</dependency>
+	</dependencies>
+
+	<description>Autonomy implementation of Norconex Committer</description>
+	<organization>
+		<name>Norconex Inc.</name>
+		<url>http://www.norconex.com</url>
+	</organization>
+	<scm>
+		<url>https://github.com/Norconex/collectors/tree/master/norconex-committer-idol</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/Norconex/collectors/issues</url>
+	</issueManagement>
+</project>
