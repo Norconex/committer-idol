@@ -400,14 +400,13 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 	public void createDataBase(String idolDbName)  {
 		String url = "http://"+this.getIdolHost()+":"+this.getIdolIndexPort()+"/DRECREATEDBASE?DREdbname="+idolDbName;
 		request(url);
-
-		
 	}
 
 	public void deleteDataBase(String idolDbName) {
 		String url = "http://"+this.getIdolHost()+":"+this.getIdolIndexPort()+"/DREDELETEDBASE?DREdbname="+idolDbName;
-		request(url);
-		
+		request(url);	
 	}
+	
+
 
 }
