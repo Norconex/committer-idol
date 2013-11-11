@@ -18,8 +18,13 @@
  */
 package com.norconex.committer.idol;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +52,7 @@ import com.norconex.committer.BaseCommitter;
 import com.norconex.committer.CommitterException;
 import com.norconex.committer.FileSystemQueueCommitter.QueuedAddedDocument;
 import com.norconex.committer.FileSystemQueueCommitter.QueuedDeletedDocument;
+import com.norconex.committer.idol.server.IdolServer;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 
 /**
@@ -101,12 +107,23 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 	
 	public static final int DEFAULT_IDOL_BATCH_SIZE = 100;
 	public static final int DEFAULT_IDOL_INDEX_PORT = 9001;
+
+	private static final int DEFAULT_IDOL_PORT = 9000;
 	
 	private int idolBatchSize = DEFAULT_IDOL_BATCH_SIZE;
 	private String idolDbName;
 	private String idolHost;
 	private int idolPort;
+	private int idolIndexPort;
 	
+	public int getIdolIndexPort() {
+		return idolIndexPort;
+	}
+
+	public void setIdolIndexPort(int idolIndexPort) {
+		this.idolIndexPort = idolIndexPort;
+	}
+
 	private final List<QueuedAddedDocument> docsToAdd = 
             new ArrayList<QueuedAddedDocument>();
     
@@ -244,7 +261,8 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 	protected void loadFromXml(XMLConfiguration xml) {
 		
 		setIdolHost(xml.getString("idolHost", null));
-		setIdolPort(xml.getInt("idolPort", DEFAULT_IDOL_INDEX_PORT));
+		setIdolPort(xml.getInt("idolPort", DEFAULT_IDOL_PORT));
+		setIdolIndexPort(xml.getInt("idolIndexPort", DEFAULT_IDOL_INDEX_PORT));
 		
 		setIdolBatchSize(xml.getInt("idolBatchSize", DEFAULT_IDOL_BATCH_SIZE));
 		
@@ -283,6 +301,55 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 		 LOG.info("Sending " + docsToAdd.size() + " documents to Idol for update.");
 		 
 		 try {
+			 	System.out.println(getIdolHost());
+			 	
+			 	LOG.debug("DocToAdd size " + docsToAdd.size());
+			 	
+			 	for (QueuedAddedDocument qa : docsToAdd) {
+			 		qa.getMetadata();
+			 		System.out.println("QA TO STRING " + qa.getMetadata().toString());
+			 		System.out.println("QA TO Content STRING " + qa);
+					
+				}		 	
+			 	//IdolServer server = idol
+			 	LOG.debug("http://" + this.getIdolHost() + ":" + this.getIdolIndexPort() + "/DREADDDATA?&DREDBNAME=News");
+			 	
+			 	URL url = new URL ("http://" + this.getIdolHost() + ":" + this.getIdolIndexPort() + "/DREADDDATA?&DREDBNAME=News");
+			 	URLConnection urlConn = url.openConnection();
+			 	urlConn.setDoInput (true); 
+			 	urlConn.setDoOutput (true);
+			 	urlConn.setUseCaches (false);
+			 	urlConn.setRequestProperty(
+			 	        "Content-Type", "application/x-www-form-urlencoded");
+			 	//urlConn.setRequestProperty("Content-Length", ""+content.length());
+			 	  
+			 	OutputStreamWriter wr = 
+			 	        new OutputStreamWriter(urlConn.getOutputStream());
+			 	wr.write("BITE ME");
+			 	wr.flush();
+			 	   
+			 	// Get the response
+			 	BufferedReader rd = new BufferedReader(
+			 	        new InputStreamReader(urlConn.getInputStream()));
+			 	List responseLines = new ArrayList(); 
+			 	String line = null;
+			 	while ((line = rd.readLine()) != null) {
+			 	    if (line != null && line.trim().length() > 0) {
+			 	        if (LOG.isDebugEnabled()) {
+			 	            LOG.debug("Response line: " + line);
+			 	            responseLines.add(line);
+			 	        }
+			 	    }
+			 	}
+			 	wr.close();
+			 	rd.close();
+			 	String response = StringUtils.join(responseLines.iterator(), " ");
+			 	if (!StringUtils.contains(response, "INDEXID")) {
+			 	    throw new RuntimeException(
+			 	            "Unexected HTTP response: " + response);
+			 	}
+			 	
+			 	
 	            // Commit Idol batch
 	            //SolrServer server = solrServerFactory.createSolrServer(this);
 	            //UpdateRequest request = new UpdateRequest();

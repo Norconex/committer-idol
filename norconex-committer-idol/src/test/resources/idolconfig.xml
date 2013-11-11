@@ -54,8 +54,9 @@
 
 			<!-- Decide what to do with your files by specifying a committer. -->
 			<committer class="com.norconex.committer.idol.IdolCommitter">
-				<idolHost>192.168.198.140</idolHost>
-				<idolPort>9101</idolPort>
+				<idolHost>192.168.0.202</idolHost>
+				<idolPort>9000</idolPort>
+				<idolIndexPort>9001</idolIndexPort>
 				<idolDbName>News</idolDbName>
 				<dreAddDataParams>
 					<param name="priority">100</param>
