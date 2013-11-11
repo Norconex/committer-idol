@@ -52,6 +52,7 @@ import com.norconex.committer.BaseCommitter;
 import com.norconex.committer.CommitterException;
 import com.norconex.committer.FileSystemQueueCommitter.QueuedAddedDocument;
 import com.norconex.committer.FileSystemQueueCommitter.QueuedDeletedDocument;
+import com.norconex.committer.idol.server.IdolHttpServer;
 import com.norconex.committer.idol.server.IdolServer;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 
@@ -300,83 +301,8 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 	private void persistToIdol(){
 		 LOG.info("Sending " + docsToAdd.size() + " documents to Idol for update.");
 		 
-		 try {
-			 	System.out.println(getIdolHost());
-			 	
-			 	LOG.debug("DocToAdd size " + docsToAdd.size());
-			 	
-			 	for (QueuedAddedDocument qa : docsToAdd) {
-			 		qa.getMetadata();
-			 		System.out.println("QA TO STRING " + qa.getMetadata().toString());
-			 		System.out.println("QA TO Content STRING " + qa);
-					
-				}		 	
-			 	//IdolServer server = idol
-			 	LOG.debug("http://" + this.getIdolHost() + ":" + this.getIdolIndexPort() + "/DREADDDATA?&DREDBNAME=News");
-			 	
-			 	URL url = new URL ("http://" + this.getIdolHost() + ":" + this.getIdolIndexPort() + "/DREADDDATA?&DREDBNAME=News");
-			 	URLConnection urlConn = url.openConnection();
-			 	urlConn.setDoInput (true); 
-			 	urlConn.setDoOutput (true);
-			 	urlConn.setUseCaches (false);
-			 	urlConn.setRequestProperty(
-			 	        "Content-Type", "application/x-www-form-urlencoded");
-			 	//urlConn.setRequestProperty("Content-Length", ""+content.length());
-			 	  
-			 	OutputStreamWriter wr = 
-			 	        new OutputStreamWriter(urlConn.getOutputStream());
-			 	wr.write("BITE ME");
-			 	wr.flush();
-			 	   
-			 	// Get the response
-			 	BufferedReader rd = new BufferedReader(
-			 	        new InputStreamReader(urlConn.getInputStream()));
-			 	List responseLines = new ArrayList(); 
-			 	String line = null;
-			 	while ((line = rd.readLine()) != null) {
-			 	    if (line != null && line.trim().length() > 0) {
-			 	        if (LOG.isDebugEnabled()) {
-			 	            LOG.debug("Response line: " + line);
-			 	            responseLines.add(line);
-			 	        }
-			 	    }
-			 	}
-			 	wr.close();
-			 	rd.close();
-			 	String response = StringUtils.join(responseLines.iterator(), " ");
-			 	if (!StringUtils.contains(response, "INDEXID")) {
-			 	    throw new RuntimeException(
-			 	            "Unexected HTTP response: " + response);
-			 	}
-			 	
-			 	
-	            // Commit Idol batch
-	            //SolrServer server = solrServerFactory.createSolrServer(this);
-	            //UpdateRequest request = new UpdateRequest();
-	            
-	            //for (String name : updateUrlParams.keySet()) {
-	                //request.setParam(name, updateUrlParams.get(name));
-	            //}
-	            
-	            //for (QueuedAddedDocument doc : docsToAdd) {
-	                //request.add(buildSolrDocument(doc.getMetadata()));
-	            //}
-
-	            //request.process(server);
-	            //server.commit();
-
-	            // Delete queued documents after commit
-	            for (QueuedAddedDocument doc : docsToAdd) {
-	                doc.deleteFromQueue();
-	            }
-	            
-	            docsToAdd.clear();
-	            
-	        } catch (Exception e) {
-	            throw new CommitterException("Cannot index document batch to Idol.", e);
-	        }
-		 
-	        LOG.info("Done sending documents to Idol for update.");		 
+	
+	     LOG.info("Done sending documents to Idol for update.");		 
 	}
 	
 	private void deleteFromIdol(){
@@ -418,6 +344,12 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         if (!docsToRemove.isEmpty()) {
             deleteFromIdol();
         }
+	}
+
+	public void createDataBase(String idolDbName) throws IOException {
+		IdolHttpServer is = new IdolHttpServer();
+		is.createDataBase(this.getIdolHost(),this.getIdolIndexPort(),idolDbName);
+		
 	}
 
 }

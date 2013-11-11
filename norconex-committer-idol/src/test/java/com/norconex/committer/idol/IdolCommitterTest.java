@@ -78,6 +78,10 @@ public class IdolCommitterTest {
 		//Setup the queue
         queue = tempFolder.newFolder("queue");
         committer.setQueueDir(queue.toString());
+        
+        //Create the databse to do the integration test
+        System.out.println(committer.getIdolDbName());
+        committer.createDataBase("test");
     }
     
 	@Test
