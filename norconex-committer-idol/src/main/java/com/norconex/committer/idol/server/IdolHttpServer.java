@@ -3,10 +3,12 @@ package com.norconex.committer.idol.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
@@ -45,10 +47,9 @@ public class IdolHttpServer {
 	private static final Logger LOG = LogManager
 			.getLogger(IdolHttpServer.class);
 	private static final String USER_AGENT = null;
-
-	public void createDataBase(String host, int port, String database)
-			throws IOException {
-		String url = "http://"+host+":"+String.valueOf(port)+"/DRECREATEDBASE?DREdbname="+database;
+	
+	private IdolResponse request(String url){
+		IdolResponse ir = new IdolResponse();
 		HttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(url);
 		// add header
@@ -56,24 +57,44 @@ public class IdolHttpServer {
 
 		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
 		
-		post.setEntity(new UrlEncodedFormEntity(urlParameters));
+		try {
+			post.setEntity(new UrlEncodedFormEntity(urlParameters));
+			HttpResponse response = client.execute(post);
+			LOG.debug("\nSending 'POST' request to URL : " + url);
+			LOG.debug("Post parameters : " + post.getEntity());
+			LOG.debug("Response Code : "
+					+ response.getStatusLine().getStatusCode());
 
-		HttpResponse response = client.execute(post);
-		System.out.println("\nSending 'POST' request to URL : " + url);
-		System.out.println("Post parameters : " + post.getEntity());
-		System.out.println("Response Code : "
-				+ response.getStatusLine().getStatusCode());
+			BufferedReader rd = new BufferedReader(new InputStreamReader(response
+					.getEntity().getContent()));
 
-		BufferedReader rd = new BufferedReader(new InputStreamReader(response
-				.getEntity().getContent()));
-
-		StringBuffer result = new StringBuffer();
-		String line = "";
-		while ((line = rd.readLine()) != null) {
-			result.append(line);
+			StringBuffer result = new StringBuffer();
+			String line = "";
+			while ((line = rd.readLine()) != null) {
+				result.append(line);
+			}
+			ir.setResponse(result.toString());
+			LOG.debug(result.toString());
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
-		System.out.println(result.toString());
+		return ir;
+	}
 
+	public void createDataBase(String idolHost, int idolIndexPort, String idolDbName) {
+		String url = "http://"+idolHost+":"+String.valueOf(idolIndexPort)+"/DRECREATEDBASE?DREdbname="+idolDbName;
+		request(url);
+	}
+
+	public void deleteDataBase(String idolHost, int idolIndexPort,
+			String idolDbName) {
+		String url = "http://"+idolHost+":"+String.valueOf(idolIndexPort)+"/DREDELETEDBASE?DREdbname="+idolDbName;
+		request(url);
+		
 	}
 }

@@ -30,6 +30,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,6 +83,11 @@ public class IdolCommitterTest {
         //Create the databse to do the integration test
         System.out.println(committer.getIdolDbName());
         committer.createDataBase("test");
+    }
+
+    @After
+    public void teardown() throws Exception{
+    	committer.deleteDataBase("test");
     }
     
 	@Test
