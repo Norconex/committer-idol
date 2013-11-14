@@ -81,13 +81,13 @@ public class IdolCommitterTest {
         committer.setQueueDir(queue.toString());
         
         //Create the databse to do the integration test
-        System.out.println(committer.getIdolDbName());
-        committer.createDataBase("test");
+        //System.out.println(committer.getIdolDbName());
+        //committer.create("test");
     }
 
     @After
     public void teardown() throws Exception{
-    	committer.deleteDataBase("test");
+    	//committer.delete("test");
     }
     
 	@Test
@@ -114,7 +114,15 @@ public class IdolCommitterTest {
 
         // Add new doc to Idol
         committer.queueAdd(id, file, metadata);
+        
+        String content2 = "Bonjour La planette!";
+        File file2 = createFile(content2);
+
+        String id2 = "2";
+        Properties metadata2 = new Properties();
+        metadata2.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id2);
        
+        committer.queueAdd(id2, file2, metadata2);
 
         committer.commit();
 
@@ -132,6 +140,4 @@ public class IdolCommitterTest {
         return file;
     }
 	
-	
-
 }

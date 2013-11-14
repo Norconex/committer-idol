@@ -19,11 +19,17 @@
 package com.norconex.committer.idol;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -37,10 +43,12 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -48,6 +56,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -60,10 +71,12 @@ import com.norconex.committer.BaseCommitter;
 import com.norconex.committer.CommitterException;
 import com.norconex.committer.FileSystemQueueCommitter.QueuedAddedDocument;
 import com.norconex.committer.FileSystemQueueCommitter.QueuedDeletedDocument;
+import com.norconex.committer.idol.server.IdolDocument;
 import com.norconex.committer.idol.server.IdolHttpServer;
 import com.norconex.committer.idol.server.IdolResponse;
 import com.norconex.committer.idol.server.IdolServer;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.map.Properties;
 
 /**
  * Commits documents to Autonomy IDOL Server.
@@ -105,27 +118,43 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
  * 
  * @author <a href="mailto:stephen.jacob@norconex.com">Stephen Jacob</a>
  */
-
 public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
+	/*
+	 * DREADD Indexes content into IDOL server. DREADDDATA Indexes content over
+	 * socket into IDOL server. DREBACKUP Backs up IDOL server's Data index.
+	 * DRECHANGEMETA Changes documents' meta fields. DRECOMPACT Compacts IDOL
+	 * server's Data index. DRECREATEDBASE Creates an IDOL server database.
+	 * DREDELDBASE Deletes all documents from an IDOL server database.
+	 * DREDELETEDOC Deletes documents by ID. DREDELETEREF Deletes documents by
+	 * reference. DREEXPIRE Expires documents from IDOL server. DREEXPORTIDX
+	 * Exports IDX files from IDOL server. DREEXPORTREMOTE Exports XML files
+	 * from one IDOL server and indexes them into another. DREEXPORTXML Exports
+	 * XML files from IDOL server. DREFLUSHANDPAUSE Prepares IDOL server for a
+	 * snapshot (hot backup). DREINITIAL Resets IDOL server's Data index.
+	 * DREREMOVEDBASE Deletes an IDOL server database. DREREPLACE Changes
+	 * documents' field values. DRERESET Activates configuration-file changes.
+	 * DRERESIZEINDEXCACHE Dynamically resizes the index cache. DRESYNC Flushes
+	 * to disk the index cache. DREUNDELETEDOC Restores deleted documents.
+	 */
 
 	private static final long serialVersionUID = -366150594611459278L;
 
 	private static final Logger LOG = LogManager.getLogger(IdolCommitter.class);
-	
+
 	public static final String DEFAULT_IDOL_REF_FIELD = "DREREFERENCE";
 	public static final String DEFAULT_IDOL_CONTENT_FIELD = "DRECONTENT";
-	
+
 	public static final int DEFAULT_IDOL_BATCH_SIZE = 100;
 	public static final int DEFAULT_IDOL_INDEX_PORT = 9001;
 
 	private static final int DEFAULT_IDOL_PORT = 9000;
-	
+
 	private int idolBatchSize = DEFAULT_IDOL_BATCH_SIZE;
 	private String idolDbName;
 	private String idolHost;
 	private int idolPort;
 	private int idolIndexPort;
-	
+
 	public int getIdolIndexPort() {
 		return idolIndexPort;
 	}
@@ -134,30 +163,25 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 		this.idolIndexPort = idolIndexPort;
 	}
 
-	private final List<QueuedAddedDocument> docsToAdd = 
-            new ArrayList<QueuedAddedDocument>();
-    
-	private final List<QueuedDeletedDocument> docsToRemove = 
-            new ArrayList<QueuedDeletedDocument>();
-	
-    private final Map<String, String> updateUrlParams = 
-            new HashMap<String, String>();
-    
-    private final Map<String, String> deleteUrlParams = 
-            new HashMap<String, String>();
-    
-	public IdolCommitter(){
+	private final List<QueuedAddedDocument> docsToAdd = new ArrayList<QueuedAddedDocument>();
+
+	private final List<QueuedDeletedDocument> docsToRemove = new ArrayList<QueuedDeletedDocument>();
+
+	private final Map<String, String> updateUrlParams = new HashMap<String, String>();
+
+	private final Map<String, String> deleteUrlParams = new HashMap<String, String>();
+
+	public IdolCommitter() {
 		this(null);
-		
+
 	}
-	
-	//TODO: Factory class for Idol Server
-	public IdolCommitter(Object obj){
-		if(obj == null){
-			//do something
-		}
-		else {
-			//do something else
+
+	// TODO: Factory class for Idol Server
+	public IdolCommitter(Object obj) {
+		if (obj == null) {
+			// do something
+		} else {
+			// do something else
 		}
 	}
 
@@ -200,31 +224,31 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 	public List<QueuedDeletedDocument> getDocsToRemove() {
 		return docsToRemove;
 	}
-	
-    public void setUpdateUrlParam(String name, String value) {
-        updateUrlParams.put(name, value);
-    }
-    
-    public void setDeleteUrlParam(String name, String value) {
-        deleteUrlParams.put(name, value);
-    }
-    
-    public String getUpdateUrlParam(String name) {
-        return updateUrlParams.get(name);
-    }
-    
-    public String getDeleteUrlParam(String name) {
-        return deleteUrlParams.get(name);
-    }
-    
-    public Set<String> getUpdateUrlParamNames() {
-        return updateUrlParams.keySet();
-    }
-    
-    public Set<String> getDeleteUrlParamNames() {
-        return deleteUrlParams.keySet();
-    }
-    
+
+	public void setUpdateUrlParam(String name, String value) {
+		updateUrlParams.put(name, value);
+	}
+
+	public void setDeleteUrlParam(String name, String value) {
+		deleteUrlParams.put(name, value);
+	}
+
+	public String getUpdateUrlParam(String name) {
+		return updateUrlParams.get(name);
+	}
+
+	public String getDeleteUrlParam(String name) {
+		return deleteUrlParams.get(name);
+	}
+
+	public Set<String> getUpdateUrlParamNames() {
+		return updateUrlParams.keySet();
+	}
+
+	public Set<String> getDeleteUrlParamNames() {
+		return deleteUrlParams.keySet();
+	}
+
 	public Map<String, String> getUpdateUrlParams() {
 		return updateUrlParams;
 	}
@@ -233,11 +257,11 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 		return deleteUrlParams;
 	}
 
-	public String getIdolUrl(){
+	public String getIdolUrl() {
 		return "http://" + this.idolHost + ":" + this.idolPort + "/";
 	}
-	
-	private IdolResponse request(String url){
+
+	private IdolResponse request(String url) {
 		IdolResponse ir = new IdolResponse();
 		HttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(url);
@@ -245,7 +269,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 		post.setHeader("User-Agent", "");
 
 		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-		
+
 		try {
 			post.setEntity(new UrlEncodedFormEntity(urlParameters));
 			HttpResponse response = client.execute(post);
@@ -254,8 +278,8 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 			LOG.debug("Response Code : "
 					+ response.getStatusLine().getStatusCode());
 
-			BufferedReader rd = new BufferedReader(new InputStreamReader(response
-					.getEntity().getContent()));
+			BufferedReader rd = new BufferedReader(new InputStreamReader(
+					response.getEntity().getContent()));
 
 			StringBuffer result = new StringBuffer();
 			String line = "";
@@ -275,138 +299,253 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 		return ir;
 	}
 
-	
-	
-	
+	private void addToIdol(String url, InputStream is, Properties prop)
+			throws IOException {
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+		// add reuqest header
+		con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", "");
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+		
+		String urlParameters = "#DREREFERENCE " + prop.toString() + "\n"
+				+ "#DRETITLE "+IOUtils.toString(is) +"\n"
+				+ "#DRECONTENT Content goes here \n"
+				+ "#DREDBNAME test\n"
+				+ "#DREENDDOC \n" 
+				+ "#DREENDDATAREFERENCE \n";
+
+		// Send post request
+		con.setDoOutput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'POST' request to URL : " + url);
+		System.out.println("Post parameters : " + urlParameters);
+		System.out.println("Response Code : " + responseCode);
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+
+		// print result
+		System.out.println(response.toString());
+
+	}
+
 	@Override
 	protected void saveToXML(XMLStreamWriter writer) throws XMLStreamException {
 		/*
-        writer.writeStartElement("solrURL");
-        writer.writeCharacters(solrURL);
-        writer.writeEndElement();
-
-        writer.writeStartElement("solrUpdateURLParams");
-        for (String name : updateUrlParams.keySet()) {
-            writer.writeStartElement("param");
-            writer.writeAttribute("name", name);
-            writer.writeCharacters(updateUrlParams.get(name));
-            writer.writeEndElement();
-        }
-        writer.writeEndElement();
-        
-        writer.writeStartElement("solrDeleteURLParams");
-        for (String name : deleteUrlParams.keySet()) {
-            writer.writeStartElement("param");
-            writer.writeAttribute("name", name);
-            writer.writeCharacters(deleteUrlParams.get(name));
-            writer.writeEndElement();
-        }
-        writer.writeEndElement();
-        
-        writer.writeStartElement("solrBatchSize");
-        writer.writeCharacters(ObjectUtils.toString(getSolrBatchSize()));
-        writer.writeEndElement();
-        */
+		 * writer.writeStartElement("solrURL"); writer.writeCharacters(solrURL);
+		 * writer.writeEndElement();
+		 * 
+		 * writer.writeStartElement("solrUpdateURLParams"); for (String name :
+		 * updateUrlParams.keySet()) { writer.writeStartElement("param");
+		 * writer.writeAttribute("name", name);
+		 * writer.writeCharacters(updateUrlParams.get(name));
+		 * writer.writeEndElement(); } writer.writeEndElement();
+		 * 
+		 * writer.writeStartElement("solrDeleteURLParams"); for (String name :
+		 * deleteUrlParams.keySet()) { writer.writeStartElement("param");
+		 * writer.writeAttribute("name", name);
+		 * writer.writeCharacters(deleteUrlParams.get(name));
+		 * writer.writeEndElement(); } writer.writeEndElement();
+		 * 
+		 * writer.writeStartElement("solrBatchSize");
+		 * writer.writeCharacters(ObjectUtils.toString(getSolrBatchSize()));
+		 * writer.writeEndElement();
+		 */
 	}
 
 	@Override
 	protected void loadFromXml(XMLConfiguration xml) {
-		
+
 		setIdolHost(xml.getString("idolHost", null));
 		setIdolPort(xml.getInt("idolPort", DEFAULT_IDOL_PORT));
 		setIdolIndexPort(xml.getInt("idolIndexPort", DEFAULT_IDOL_INDEX_PORT));
-		
+
 		setIdolBatchSize(xml.getInt("idolBatchSize", DEFAULT_IDOL_BATCH_SIZE));
-		
-        List<HierarchicalConfiguration> uparams = 
-                xml.configurationsAt("dreAddDataParams.param");
-        for (HierarchicalConfiguration param : uparams) {
-            setUpdateUrlParam(param.getString("[@name]"), param.getString(""));
-        }
-        
-        List<HierarchicalConfiguration> dparams = 
-                xml.configurationsAt("dreDeleteRefParams.param");
-        for (HierarchicalConfiguration param : dparams) {
-            setDeleteUrlParam(param.getString("[@name]"), param.getString(""));
-        }
+
+		List<HierarchicalConfiguration> uparams = xml
+				.configurationsAt("dreAddDataParams.param");
+		for (HierarchicalConfiguration param : uparams) {
+			setUpdateUrlParam(param.getString("[@name]"), param.getString(""));
+		}
+
+		List<HierarchicalConfiguration> dparams = xml
+				.configurationsAt("dreDeleteRefParams.param");
+		for (HierarchicalConfiguration param : dparams) {
+			setDeleteUrlParam(param.getString("[@name]"), param.getString(""));
+		}
 	}
 
 	@Override
 	protected void commitAddedDocument(QueuedAddedDocument document)
 			throws IOException {
-        docsToAdd.add(document);
-        if (docsToAdd.size() % idolBatchSize == 0) {
-            persistToIdol();
-        }
+		docsToAdd.add(document);
+		if (docsToAdd.size() % idolBatchSize == 0) {
+			persistToIdol();
+		}
 	}
 
 	@Override
 	protected void commitDeletedDocument(QueuedDeletedDocument document)
 			throws IOException {
-        docsToRemove.add(document);
-        if (docsToRemove.size() % idolBatchSize == 0) {
-            deleteFromIdol();
-        }
+		docsToRemove.add(document);
+		if (docsToRemove.size() % idolBatchSize == 0) {
+			deleteFromIdol();
+		}
 	}
 	
-	private void persistToIdol(){
-		 LOG.info("Sending " + docsToAdd.size() + " documents to Idol for update.");
-		 
-	
-	     LOG.info("Done sending documents to Idol for update.");		 
-	}
-	
-	private void deleteFromIdol(){
-        LOG.info("Sending " + docsToRemove.size() + " documents to Idol for deletion.");
-        
-        try {
-            //SolrServer server = solrServerFactory.createSolrServer(this);
-             
-        	// Commit Solr batch
-            //UpdateRequest request = new UpdateRequest();
-            
-        	//for (String name : deleteUrlParams.keySet()) {
-                //request.setParam(name, deleteUrlParams.get(name));
-            //}
-            
-        	//for (QueuedDeletedDocument doc : docsToRemove) {
-                //request.deleteById(doc.getReference());
-            //}
-            
-        	//request.process(server);
-            //server.commit();
+	/*
+	@Override
+	public void commit(){
+		URL obj;
+		try {
+			obj = new URL("http://"+this.idolHost);
+			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-            // Delete queued documents after commit
-            for (QueuedDeletedDocument doc : docsToRemove) {
-                doc.deleteFromQueue();
-            }
-            docsToRemove.clear();
-        } catch (Exception e) {
-            throw new CommitterException("Cannot delete document batch from Idol.", e);
-        }
-        LOG.info("Done sending documents to Idol for deletion.");	
+			// add reuqest header
+			con.setRequestMethod("POST");
+			con.setRequestProperty("User-Agent", "");
+			con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+			
+			String urlParameters = "/DRESYNC";
+			// Send post request
+			con.setDoOutput(true);
+			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+			wr.writeBytes(urlParameters);
+			wr.flush();
+			wr.close();
+
+			int responseCode = con.getResponseCode();
+			System.out.println("\nSending 'POST' request to URL : http"+this.idolHost);
+			System.out.println("Post parameters : " + urlParameters);
+			System.out.println("Response Code : " + responseCode);
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					con.getInputStream()));
+			String inputLine;
+			StringBuffer response = new StringBuffer();
+
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
+			// print result
+			System.out.println(response.toString());
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (ProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+
+		
+		
+		
 	}
-	
+*/
+	private void persistToIdol() {
+		LOG.info("Sending " + docsToAdd.size()
+				+ " documents to Idol for update.");
+		String baseUrl = "http://"
+				+ this.getIdolHost().concat(":9001").concat("/DREADDDATA?");
+
+		for (QueuedAddedDocument qad : docsToAdd) {
+			try {
+				LOG.info("============================");
+				IOUtils.copy(qad.getContentStream(), System.out);
+				Properties myMetadata = qad.getMetadata();
+				this.addToIdol(baseUrl, qad.getContentStream(),
+						qad.getMetadata());
+				System.out
+						.println("!!!!!!!!!!!!!! How many docs do I need to add? "
+								+ this.getDocsToAdd().size());
+				System.out.println(qad.getMetadata());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		LOG.info("Done sending documents to Idol for update.");
+	}
+
+	private void deleteFromIdol() {
+		LOG.info("Sending " + docsToRemove.size()
+				+ " documents to Idol for deletion.");
+
+		try {
+			// SolrServer server = solrServerFactory.createSolrServer(this);
+
+			// Commit Solr batch
+			// UpdateRequest request = new UpdateRequest();
+
+			// for (String name : deleteUrlParams.keySet()) {
+			// request.setParam(name, deleteUrlParams.get(name));
+			// }
+
+			// for (QueuedDeletedDocument doc : docsToRemove) {
+			// request.deleteById(doc.getReference());
+			// }
+
+			// request.process(server);
+			// server.commit();
+
+			// Delete queued documents after commit
+			for (QueuedDeletedDocument doc : docsToRemove) {
+				doc.deleteFromQueue();
+			}
+			docsToRemove.clear();
+		} catch (Exception e) {
+			throw new CommitterException(
+					"Cannot delete document batch from Idol.", e);
+		}
+		LOG.info("Done sending documents to Idol for deletion.");
+	}
+
 	@Override
 	protected void commitComplete() {
-        if (!docsToAdd.isEmpty()) {
-            persistToIdol();
-        }
-        if (!docsToRemove.isEmpty()) {
-            deleteFromIdol();
-        }
+		if (!docsToAdd.isEmpty()) {
+			persistToIdol();
+		}
+		if (!docsToRemove.isEmpty()) {
+			deleteFromIdol();
+		}
 	}
 
-	public void createDataBase(String idolDbName)  {
-		String url = "http://"+this.getIdolHost()+":"+this.getIdolIndexPort()+"/DRECREATEDBASE?DREdbname="+idolDbName;
+	public void create(String idolDbName) {
+		String url = "http://" + this.getIdolHost() + ":"
+				+ this.getIdolIndexPort() + "/DRECREATEDBASE?DREdbname="
+				+ idolDbName;
 		request(url);
 	}
 
-	public void deleteDataBase(String idolDbName) {
-		String url = "http://"+this.getIdolHost()+":"+this.getIdolIndexPort()+"/DREDELETEDBASE?DREdbname="+idolDbName;
-		request(url);	
+	public void delete(String idolDbName) {
+		String url = "http://" + this.getIdolHost() + ":"
+				+ this.getIdolIndexPort() + "/DREREMOVEDBASE?DREdbname="
+				+ idolDbName;
+		request(url);
 	}
-	
 
+	public void truncate(String idolDbName) {
+		String url = "http://" + this.getIdolHost() + ":"
+				+ this.getIdolIndexPort() + "/DREDELETEDBASE?DREdbname="
+				+ idolDbName;
+		request(url);
+	}
 
 }
