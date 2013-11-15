@@ -57,7 +57,7 @@
 				<idolHost>192.168.0.202</idolHost>
 				<idolPort>9000</idolPort>
 				<idolIndexPort>9001</idolIndexPort>
-				<idolDbName>News</idolDbName>
+				<idolDbName>Test</idolDbName>
 				<dreAddDataParams>
 					<param name="priority">100</param>
 				</dreAddDataParams>
@@ -70,7 +70,6 @@
 				<batchSize>50</batchSize>
 				<idolBatchSize>15</idolBatchSize>
 			</committer>
-
 		</crawler>
 	</crawlers>
 

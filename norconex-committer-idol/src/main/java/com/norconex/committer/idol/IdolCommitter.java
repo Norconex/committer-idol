@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
@@ -143,14 +144,11 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 
 	public static final String DEFAULT_IDOL_REF_FIELD = "DREREFERENCE";
 	public static final String DEFAULT_IDOL_CONTENT_FIELD = "DRECONTENT";
-
 	public static final int DEFAULT_IDOL_BATCH_SIZE = 100;
-	public static final int DEFAULT_IDOL_INDEX_PORT = 9001;
-
 	private static final int DEFAULT_IDOL_PORT = 9000;
-
+	public static int DEFAULT_IDOL_INDEX_PORT = 9001;
 	private int idolBatchSize = DEFAULT_IDOL_BATCH_SIZE;
-	private String idolDbName;
+	public String idolDbName;
 	private String idolHost;
 	private int idolPort;
 	private int idolIndexPort;
@@ -299,34 +297,44 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 		return ir;
 	}
 
+	
+	 public void commitToIdol(){
+	 this.request("http://"+this.getIdolHost()+":"+this.getIdolIndexPort()+"/DRESYNC");
+	 }
+//	
 	private void addToIdol(String url, InputStream is, Properties prop)
 			throws IOException {
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-		// add reuqest header
+		// add request header
 		con.setRequestMethod("POST");
 		con.setRequestProperty("User-Agent", "");
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-		
-		String urlParameters = "#DREREFERENCE " + prop.toString() + "\n"
-				+ "#DRETITLE "+IOUtils.toString(is) +"\n"
-				+ "#DRECONTENT Content goes here \n"
-				+ "#DREDBNAME test\n"
-				+ "#DREENDDOC \n" 
-				+ "#DREENDDATAREFERENCE \n";
+
+		String idolDocument = "#DREREFERENCE 1\n";
+		for (Entry<String, List<String>> entry : prop.entrySet()) {
+			for (String value : entry.getValue()) {
+				LOG.debug("value: " + value);
+				idolDocument = idolDocument.concat("#DREFIELD "
+						+ entry.getKey() + "=\"" + value + "\"\n");
+			}
+		}
+
+		idolDocument = idolDocument.concat("#DREDBNAME " + this.getIdolDbName()
+				+ "\n" + "#DREENDDOC \n" + "#DREENDDATAREFERENCE \n");
 
 		// Send post request
 		con.setDoOutput(true);
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-		wr.writeBytes(urlParameters);
+		wr.writeBytes(idolDocument);
 		wr.flush();
 		wr.close();
 
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'POST' request to URL : " + url);
-		System.out.println("Post parameters : " + urlParameters);
-		System.out.println("Response Code : " + responseCode);
+		LOG.debug("\nSending 'POST' request to URL : " + url);
+		LOG.debug("Post parameters : " + idolDocument);
+		LOG.debug("Response Code : " + responseCode);
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(
 				con.getInputStream()));
@@ -339,7 +347,8 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 		in.close();
 
 		// print result
-		System.out.println(response.toString());
+		LOG.debug(response.toString());
+		
 
 	}
 
@@ -370,12 +379,13 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 	@Override
 	protected void loadFromXml(XMLConfiguration xml) {
 
-		setIdolHost(xml.getString("idolHost", null));
+		setIdolHost(xml.getString("idolHost"));
 		setIdolPort(xml.getInt("idolPort", DEFAULT_IDOL_PORT));
 		setIdolIndexPort(xml.getInt("idolIndexPort", DEFAULT_IDOL_INDEX_PORT));
-
 		setIdolBatchSize(xml.getInt("idolBatchSize", DEFAULT_IDOL_BATCH_SIZE));
-
+		setBatchSize(xml.getInt("batchSize"));
+		setIdolDbName(xml.getString("idolDbName"));
+		LOG.debug("------" + xml.getString("idolDbName"));
 		List<HierarchicalConfiguration> uparams = xml
 				.configurationsAt("dreAddDataParams.param");
 		for (HierarchicalConfiguration param : uparams) {
@@ -406,75 +416,58 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 			deleteFromIdol();
 		}
 	}
-	
+
 	/*
-	@Override
-	public void commit(){
-		URL obj;
-		try {
-			obj = new URL("http://"+this.idolHost);
-			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-			// add reuqest header
-			con.setRequestMethod("POST");
-			con.setRequestProperty("User-Agent", "");
-			con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-			
-			String urlParameters = "/DRESYNC";
-			// Send post request
-			con.setDoOutput(true);
-			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-			wr.writeBytes(urlParameters);
-			wr.flush();
-			wr.close();
-
-			int responseCode = con.getResponseCode();
-			System.out.println("\nSending 'POST' request to URL : http"+this.idolHost);
-			System.out.println("Post parameters : " + urlParameters);
-			System.out.println("Response Code : " + responseCode);
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					con.getInputStream()));
-			String inputLine;
-			StringBuffer response = new StringBuffer();
-
-			while ((inputLine = in.readLine()) != null) {
-				response.append(inputLine);
-			}
-			in.close();
-			// print result
-			System.out.println(response.toString());
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (ProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-
-		
-		
-		
-	}
-*/
+	 * @Override public void commit(){ URL obj; try { obj = new
+	 * URL("http://"+this.idolHost); HttpURLConnection con = (HttpURLConnection)
+	 * obj.openConnection();
+	 * 
+	 * // add reuqest header con.setRequestMethod("POST");
+	 * con.setRequestProperty("User-Agent", "");
+	 * con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+	 * 
+	 * String urlParameters = "/DRESYNC"; // Send post request
+	 * con.setDoOutput(true); DataOutputStream wr = new
+	 * DataOutputStream(con.getOutputStream()); wr.writeBytes(urlParameters);
+	 * wr.flush(); wr.close();
+	 * 
+	 * int responseCode = con.getResponseCode();
+	 * System.out.println("\nSending 'POST' request to URL : http"
+	 * +this.idolHost); System.out.println("Post parameters : " +
+	 * urlParameters); System.out.println("Response Code : " + responseCode);
+	 * 
+	 * BufferedReader in = new BufferedReader(new InputStreamReader(
+	 * con.getInputStream())); String inputLine; StringBuffer response = new
+	 * StringBuffer();
+	 * 
+	 * while ((inputLine = in.readLine()) != null) { response.append(inputLine);
+	 * } in.close(); // print result System.out.println(response.toString()); }
+	 * catch (MalformedURLException e) { e.printStackTrace(); } catch
+	 * (ProtocolException e) { e.printStackTrace(); } catch (IOException e) {
+	 * e.printStackTrace(); }
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * }
+	 */
 	private void persistToIdol() {
 		LOG.info("Sending " + docsToAdd.size()
 				+ " documents to Idol for update.");
-		String baseUrl = "http://"
-				+ this.getIdolHost().concat(":9001").concat("/DREADDDATA?");
+		String baseUrl = "http://" 
+				+ this.getIdolHost() 
+				+ ":"
+				+ this.getIdolIndexPort() 
+				+ "/DREADDDATA?";
 
 		for (QueuedAddedDocument qad : docsToAdd) {
 			try {
-				LOG.info("============================");
-				IOUtils.copy(qad.getContentStream(), System.out);
+				LOG.debug("============================");
 				Properties myMetadata = qad.getMetadata();
 				this.addToIdol(baseUrl, qad.getContentStream(),
 						qad.getMetadata());
-				System.out
-						.println("!!!!!!!!!!!!!! How many docs do I need to add? "
-								+ this.getDocsToAdd().size());
-				System.out.println(qad.getMetadata());
+				LOG.debug(qad.getMetadata());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
