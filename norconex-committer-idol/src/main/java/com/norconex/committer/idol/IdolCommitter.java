@@ -312,10 +312,13 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 		con.setRequestProperty("User-Agent", "");
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
-		String idolDocument = "#DREREFERENCE 1\n";
+		String idolDocument = "";
 		for (Entry<String, List<String>> entry : prop.entrySet()) {
 			for (String value : entry.getValue()) {
 				LOG.debug("value: " + value);
+				if(entry.getKey().equals("document.reference")){
+					idolDocument = idolDocument.concat("#DREREFERENCE ").concat(value).concat("\n");
+				}
 				idolDocument = idolDocument.concat("#DREFIELD "
 						+ entry.getKey() + "=\"" + value + "\"\n");
 			}
@@ -348,6 +351,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 
 		// print result
 		LOG.debug(response.toString());
+		this.commitToIdol();
 		
 
 	}
