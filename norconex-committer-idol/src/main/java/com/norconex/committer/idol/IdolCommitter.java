@@ -323,7 +323,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 						+ entry.getKey() + "=\"" + value + "\"\n");
 			}
 		}
-
+		idolDocument = idolDocument.concat("#DRECONTENT\n" + IOUtils.toString(is)+"\n");
 		idolDocument = idolDocument.concat("#DREDBNAME " + this.getIdolDbName()
 				+ "\n" + "#DREENDDOC \n" + "#DREENDDATAREFERENCE \n");
 
@@ -351,7 +351,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 
 		// print result
 		LOG.debug(response.toString());
-		this.commitToIdol();
+		//this.commitToIdol();
 		
 
 	}
