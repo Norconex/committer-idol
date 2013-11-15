@@ -297,11 +297,26 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 		return ir;
 	}
 
+	public void commitToIdol() {
+		this.request("http://" + this.getIdolHost() + ":"
+				+ this.getIdolIndexPort() + "/DRESYNC");
+	}
 	
-	 public void commitToIdol(){
-	 this.request("http://"+this.getIdolHost()+":"+this.getIdolIndexPort()+"/DRESYNC");
-	 }
-//	
+	private String getDreReference(Properties prop){
+		String dreReferenceValue="99";
+		for (Entry<String, List<String>> entry : prop.entrySet()) {
+			for (String value : entry.getValue()) {
+				LOG.debug("value: " + value);
+				if (entry.getKey().equals("document.reference")) {
+					dreReferenceValue = value;
+				}
+			}
+		}
+		
+		return dreReferenceValue;
+	}
+
+	//
 	private void addToIdol(String url, InputStream is, Properties prop)
 			throws IOException {
 		URL obj = new URL(url);
@@ -313,19 +328,23 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
 		String idolDocument = "";
+		//Create a database key for the idol idx document
+		idolDocument = idolDocument.concat("\n#DREREFERENCE ") + this.getDreReference(prop);
+
+		//Loop thru the list of properties and create idx fields accordingly.
 		for (Entry<String, List<String>> entry : prop.entrySet()) {
 			for (String value : entry.getValue()) {
 				LOG.debug("value: " + value);
-				if(entry.getKey().equals("document.reference")){
-					idolDocument = idolDocument.concat("#DREREFERENCE ").concat(value).concat("\n");
-				}
-				idolDocument = idolDocument.concat("#DREFIELD "
-						+ entry.getKey() + "=\"" + value + "\"\n");
+				idolDocument = idolDocument.concat("\n#DREFIELD "
+						+ entry.getKey() + "=\"" + value + "\"");
 			}
 		}
-		idolDocument = idolDocument.concat("#DRECONTENT\n" + IOUtils.toString(is)+"\n");
-		idolDocument = idolDocument.concat("#DREDBNAME " + this.getIdolDbName()
-				+ "\n" + "#DREENDDOC \n" + "#DREENDDATAREFERENCE \n");
+		idolDocument = idolDocument.concat("\n#DREDBNAME "
+				+ this.getIdolDbName());
+		idolDocument = idolDocument.concat("\n#DRECONTENT\n"
+				+ IOUtils.toString(is));
+		idolDocument = idolDocument.concat("\n#DREENDDOC ");
+		idolDocument = idolDocument.concat("\n#DREENDDATAREFERENCE");
 
 		// Send post request
 		con.setDoOutput(true);
@@ -351,8 +370,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 
 		// print result
 		LOG.debug(response.toString());
-		//this.commitToIdol();
-		
+		// this.commitToIdol();
 
 	}
 
@@ -459,11 +477,8 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 	private void persistToIdol() {
 		LOG.info("Sending " + docsToAdd.size()
 				+ " documents to Idol for update.");
-		String baseUrl = "http://" 
-				+ this.getIdolHost() 
-				+ ":"
-				+ this.getIdolIndexPort() 
-				+ "/DREADDDATA?";
+		String baseUrl = "http://" + this.getIdolHost() + ":"
+				+ this.getIdolIndexPort() + "/DREADDDATA?";
 
 		for (QueuedAddedDocument qad : docsToAdd) {
 			try {

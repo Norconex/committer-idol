@@ -94,10 +94,10 @@ public class IdolCommitterTest {
 	public void testXmlLoad() {
 		//Verify that the values from the xml file have been loaded into the Idol committer
 		assertTrue(committer.getIdolBatchSize() == 15);
-		//assertTrue(committer.getIdolHost().equalsIgnoreCase("192.168.0.202"));
+		assertTrue(committer.getIdolHost().equalsIgnoreCase("192.168.0.202"));
 		System.out.println("IdolPort" + committer.getIdolPort());
 		assertTrue(committer.getIdolPort() == 9000);
-		//assertTrue(committer.getIdolIndexPort() == 9001);
+		assertTrue(committer.getIdolIndexPort() == 9001);
 		assertTrue(committer.getUpdateUrlParam("priority").equalsIgnoreCase("100"));
 		assertTrue(committer.getDeleteUrlParam("priority").equalsIgnoreCase("100"));
 	}
@@ -107,7 +107,6 @@ public class IdolCommitterTest {
 
         String content = "hello world!";
         File file = createFile(content);
-
         String id = "1";
         Properties metadata = new Properties();
         metadata.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id);
