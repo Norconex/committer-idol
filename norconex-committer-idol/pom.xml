@@ -109,7 +109,7 @@
 		</dependency>
 	</dependencies>
 
-	<description>Autonomy implementation of Norconex Committer</description>
+	<description>Autonomy implementation of Norconex Committer. This library will help you commit documents to an Autonomy Idol Server.</description>
 	<organization>
 		<name>Norconex Inc.</name>
 		<url>http://www.norconex.com</url>
@@ -119,6 +119,81 @@
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/Norconex/collectors/issues</url>
+		<url>https://github.com/Norconex/committer-idol/issues</url>
 	</issueManagement>
+
+	<reporting>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+				<version>2.15</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<configuration>
+					<formats>
+						<format>html</format>
+						<format>xml</format>
+					</formats>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>2.5.2</version>
+				<configuration>
+					<threshold>High</threshold>
+					<effort>Default</effort>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>2.10</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.0.1</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<links>
+						<link>http://commons.apache.org/lang/api</link>
+						<link>http://java.sun.com/j2se/1.5.0/docs/api</link>
+					</links>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.7</version>
+				<configuration>
+					<webAccessUrl>https://github.com/Norconex/committer-idol</webAccessUrl>
+					<anonymousConnection>scm:git:https://github.com/Norconex/committer-idol</anonymousConnection>
+					<developerConnection>scm:git:https://github.com/Norconex/committer-idol</developerConnection>
+					<cutomtomBundle>mailing-list:Mailing List</cutomtomBundle>
+				</configuration>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>dashboard-maven-plugin</artifactId>
+			</plugin>
+
+		</plugins>
+	</reporting>
+
 </project>

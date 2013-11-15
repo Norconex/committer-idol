@@ -20,18 +20,12 @@ package com.norconex.committer.idol;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,10 +39,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -57,25 +47,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-
-//import org.apache.solr.client.solrj.SolrServer;
-//import org.apache.solr.client.solrj.impl.HttpSolrServer;
-//import org.apache.solr.client.solrj.request.UpdateRequest;
-//import org.apache.solr.common.SolrInputDocument;
-
 import com.norconex.committer.BaseCommitter;
 import com.norconex.committer.CommitterException;
-import com.norconex.committer.FileSystemQueueCommitter.QueuedAddedDocument;
-import com.norconex.committer.FileSystemQueueCommitter.QueuedDeletedDocument;
-import com.norconex.committer.idol.server.IdolDocument;
-import com.norconex.committer.idol.server.IdolHttpServer;
-import com.norconex.committer.idol.server.IdolResponse;
-import com.norconex.committer.idol.server.IdolServer;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.map.Properties;
 
@@ -119,445 +94,374 @@ import com.norconex.commons.lang.map.Properties;
  * 
  * @author <a href="mailto:stephen.jacob@norconex.com">Stephen Jacob</a>
  */
+@SuppressWarnings("restriction")
 public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
-	/*
-	 * DREADD Indexes content into IDOL server. DREADDDATA Indexes content over
-	 * socket into IDOL server. DREBACKUP Backs up IDOL server's Data index.
-	 * DRECHANGEMETA Changes documents' meta fields. DRECOMPACT Compacts IDOL
-	 * server's Data index. DRECREATEDBASE Creates an IDOL server database.
-	 * DREDELDBASE Deletes all documents from an IDOL server database.
-	 * DREDELETEDOC Deletes documents by ID. DREDELETEREF Deletes documents by
-	 * reference. DREEXPIRE Expires documents from IDOL server. DREEXPORTIDX
-	 * Exports IDX files from IDOL server. DREEXPORTREMOTE Exports XML files
-	 * from one IDOL server and indexes them into another. DREEXPORTXML Exports
-	 * XML files from IDOL server. DREFLUSHANDPAUSE Prepares IDOL server for a
-	 * snapshot (hot backup). DREINITIAL Resets IDOL server's Data index.
-	 * DREREMOVEDBASE Deletes an IDOL server database. DREREPLACE Changes
-	 * documents' field values. DRERESET Activates configuration-file changes.
-	 * DRERESIZEINDEXCACHE Dynamically resizes the index cache. DRESYNC Flushes
-	 * to disk the index cache. DREUNDELETEDOC Restores deleted documents.
-	 */
+    /*
+     * DREADD Indexes content into IDOL server. DREADDDATA Indexes content over
+     * socket into IDOL server. DREBACKUP Backs up IDOL server's Data index.
+     * DRECHANGEMETA Changes documents' meta fields. DRECOMPACT Compacts IDOL
+     * server's Data index. DRECREATEDBASE Creates an IDOL server database.
+     * DREDELDBASE Deletes all documents from an IDOL server database.
+     * DREDELETEDOC Deletes documents by ID. DREDELETEREF Deletes documents by
+     * reference. DREEXPIRE Expires documents from IDOL server. DREEXPORTIDX
+     * Exports IDX files from IDOL server. DREEXPORTREMOTE Exports XML files
+     * from one IDOL server and indexes them into another. DREEXPORTXML Exports
+     * XML files from IDOL server. DREFLUSHANDPAUSE Prepares IDOL server for a
+     * snapshot (hot backup). DREINITIAL Resets IDOL server's Data index.
+     * DREREMOVEDBASE Deletes an IDOL server database. DREREPLACE Changes
+     * documents' field values. DRERESET Activates configuration-file changes.
+     * DRERESIZEINDEXCACHE Dynamically resizes the index cache. DRESYNC Flushes
+     * to disk the index cache. DREUNDELETEDOC Restores deleted documents.
+     */
 
-	private static final long serialVersionUID = -366150594611459278L;
+    private static final long serialVersionUID = -366150594611459278L;
 
-	private static final Logger LOG = LogManager.getLogger(IdolCommitter.class);
+    private static final Logger LOG = LogManager.getLogger(IdolCommitter.class);
 
-	public static final String DEFAULT_IDOL_REF_FIELD = "DREREFERENCE";
-	public static final String DEFAULT_IDOL_CONTENT_FIELD = "DRECONTENT";
-	public static final int DEFAULT_IDOL_BATCH_SIZE = 100;
-	private static final int DEFAULT_IDOL_PORT = 9000;
-	public static int DEFAULT_IDOL_INDEX_PORT = 9001;
-	private int idolBatchSize = DEFAULT_IDOL_BATCH_SIZE;
-	public String idolDbName;
-	private String idolHost;
-	private int idolPort;
-	private int idolIndexPort;
+    public static final String DEFAULT_IDOL_REF_FIELD = "DREREFERENCE";
+    public static final String DEFAULT_IDOL_CONTENT_FIELD = "DRECONTENT";
+    public static final int DEFAULT_IDOL_BATCH_SIZE = 100;
+    private static final int DEFAULT_IDOL_PORT = 9000;
+    public static int DEFAULT_IDOL_INDEX_PORT = 9001;
+    private int idolBatchSize = DEFAULT_IDOL_BATCH_SIZE;
+    public String idolDbName;
+    private String idolHost;
+    private int idolPort;
+    private int idolIndexPort;
 
-	public int getIdolIndexPort() {
-		return idolIndexPort;
+    public int getIdolIndexPort() {
+	return idolIndexPort;
+    }
+
+    public void setIdolIndexPort(int idolIndexPort) {
+	this.idolIndexPort = idolIndexPort;
+    }
+
+    private final List<QueuedAddedDocument> docsToAdd = new ArrayList<QueuedAddedDocument>();
+
+    private final List<QueuedDeletedDocument> docsToRemove = new ArrayList<QueuedDeletedDocument>();
+
+    private final Map<String, String> updateUrlParams = new HashMap<String, String>();
+
+    private final Map<String, String> deleteUrlParams = new HashMap<String, String>();
+
+
+    public int getIdolBatchSize() {
+	return idolBatchSize;
+    }
+
+    public void setIdolBatchSize(int idolBatchSize) {
+	this.idolBatchSize = idolBatchSize;
+    }
+
+    public String getIdolDbName() {
+	return idolDbName;
+    }
+
+    public void setIdolDbName(String idolDbName) {
+	this.idolDbName = idolDbName;
+    }
+
+    public String getIdolHost() {
+	return idolHost;
+    }
+
+    public void setIdolHost(String idolHost) {
+	this.idolHost = idolHost;
+    }
+
+    public int getIdolPort() {
+	return idolPort;
+    }
+
+    public void setIdolPort(int idolPort) {
+	this.idolPort = idolPort;
+    }
+
+    public List<QueuedAddedDocument> getDocsToAdd() {
+	return docsToAdd;
+    }
+
+    public List<QueuedDeletedDocument> getDocsToRemove() {
+	return docsToRemove;
+    }
+
+    public void setUpdateUrlParam(String name, String value) {
+	updateUrlParams.put(name, value);
+    }
+
+    public void setDeleteUrlParam(String name, String value) {
+	deleteUrlParams.put(name, value);
+    }
+
+    public String getUpdateUrlParam(String name) {
+	return updateUrlParams.get(name);
+    }
+
+    public String getDeleteUrlParam(String name) {
+	return deleteUrlParams.get(name);
+    }
+
+    public Set<String> getUpdateUrlParamNames() {
+	return updateUrlParams.keySet();
+    }
+
+    public Set<String> getDeleteUrlParamNames() {
+	return deleteUrlParams.keySet();
+    }
+
+    public Map<String, String> getUpdateUrlParams() {
+	return updateUrlParams;
+    }
+
+    public Map<String, String> getDeleteUrlParams() {
+	return deleteUrlParams;
+    }
+
+    public String getIdolUrl() {
+	return "http://" + this.idolHost + ":" + this.idolPort + "/";
+    }
+
+    private String request(String url) {
+	String idolResponse = null;
+	HttpClient client = new DefaultHttpClient();
+	HttpPost post = new HttpPost(url);
+	// add header
+	post.setHeader("User-Agent", "");
+
+	List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+
+	try {
+	    post.setEntity(new UrlEncodedFormEntity(urlParameters));
+	    HttpResponse response = client.execute(post);
+	    LOG.debug("\nSending 'POST' request to URL : " + url);
+	    LOG.debug("Post parameters : " + post.getEntity());
+	    LOG.debug("Response Code : "
+		    + response.getStatusLine().getStatusCode());
+
+	    BufferedReader rd = new BufferedReader(new InputStreamReader(
+		    response.getEntity().getContent()));
+
+	    StringBuffer result = new StringBuffer();
+	    String line = "";
+	    while ((line = rd.readLine()) != null) {
+		result.append(line);
+	    }
+	    idolResponse = result.toString();
+	    LOG.debug(result.toString());
+	} catch (UnsupportedEncodingException e) {
+	    e.printStackTrace();
+	} catch (ClientProtocolException e) {
+	    e.printStackTrace();
+	} catch (IOException e) {
+	    e.printStackTrace();
 	}
 
-	public void setIdolIndexPort(int idolIndexPort) {
-		this.idolIndexPort = idolIndexPort;
-	}
+	return idolResponse;
+    }
 
-	private final List<QueuedAddedDocument> docsToAdd = new ArrayList<QueuedAddedDocument>();
+    public void commitToIdol() {
+	this.request("http://" + this.getIdolHost() + ":"
+	        + this.getIdolIndexPort() + "/DRESYNC");
+    }
 
-	private final List<QueuedDeletedDocument> docsToRemove = new ArrayList<QueuedDeletedDocument>();
-
-	private final Map<String, String> updateUrlParams = new HashMap<String, String>();
-
-	private final Map<String, String> deleteUrlParams = new HashMap<String, String>();
-
-	public IdolCommitter() {
-		this(null);
-
-	}
-
-	// TODO: Factory class for Idol Server
-	public IdolCommitter(Object obj) {
-		if (obj == null) {
-			// do something
-		} else {
-			// do something else
+    private String getDreReference(Properties prop) {
+	String dreReferenceValue = "99";
+	for (Entry<String, List<String>> entry : prop.entrySet()) {
+	    for (String value : entry.getValue()) {
+		LOG.debug("value: " + value);
+		if (entry.getKey().equals("document.reference")) {
+		    dreReferenceValue = value;
 		}
+	    }
 	}
 
-	public int getIdolBatchSize() {
-		return idolBatchSize;
+	return dreReferenceValue;
+    }
+
+    private void addToIdol(String url, InputStream is, Properties prop)
+	    throws IOException {
+	URL obj = new URL(url);
+	HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+	// add request header
+	con.setRequestMethod("POST");
+	con.setRequestProperty("User-Agent", "");
+	con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+
+	String idolDocument = "";
+	// Create a database key for the idol idx document
+	idolDocument = idolDocument.concat("\n#DREREFERENCE ")
+	        + this.getDreReference(prop);
+
+	// Loop thru the list of properties and create idx fields accordingly.
+	for (Entry<String, List<String>> entry : prop.entrySet()) {
+	    for (String value : entry.getValue()) {
+		LOG.debug("value: " + value);
+		idolDocument = idolDocument.concat("\n#DREFIELD "
+		        + entry.getKey() + "=\"" + value + "\"");
+	    }
+	}
+	idolDocument = idolDocument.concat("\n#DREDBNAME "
+	        + this.getIdolDbName());
+	idolDocument = idolDocument.concat("\n#DRECONTENT\n"
+	        + IOUtils.toString(is));
+	idolDocument = idolDocument.concat("\n#DREENDDOC ");
+	idolDocument = idolDocument.concat("\n#DREENDDATAREFERENCE");
+
+	// Send post request
+	con.setDoOutput(true);
+	DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+	wr.writeBytes(idolDocument);
+	wr.flush();
+	wr.close();
+
+	int responseCode = con.getResponseCode();
+	LOG.debug("\nSending 'POST' request to URL : " + url);
+	LOG.debug("Post parameters : " + idolDocument);
+	LOG.debug("Response Code : " + responseCode);
+
+	BufferedReader in = new BufferedReader(new InputStreamReader(
+	        con.getInputStream()));
+	String inputLine;
+	StringBuffer response = new StringBuffer();
+
+	while ((inputLine = in.readLine()) != null) {
+	    response.append(inputLine);
+	}
+	in.close();
+
+	// print result
+	LOG.debug(response.toString());
+	// this.commitToIdol();
+
+    }
+
+    @Override
+    protected void loadFromXml(XMLConfiguration xml) {
+
+	setIdolHost(xml.getString("idolHost"));
+	setIdolPort(xml.getInt("idolPort", DEFAULT_IDOL_PORT));
+	setIdolIndexPort(xml.getInt("idolIndexPort", DEFAULT_IDOL_INDEX_PORT));
+	setIdolBatchSize(xml.getInt("idolBatchSize", DEFAULT_IDOL_BATCH_SIZE));
+	setBatchSize(xml.getInt("batchSize"));
+	setIdolDbName(xml.getString("idolDbName"));
+	LOG.debug("------" + xml.getString("idolDbName"));
+	List<HierarchicalConfiguration> uparams = xml
+	        .configurationsAt("dreAddDataParams.param");
+	for (HierarchicalConfiguration param : uparams) {
+	    setUpdateUrlParam(param.getString("[@name]"), param.getString(""));
 	}
 
-	public void setIdolBatchSize(int idolBatchSize) {
-		this.idolBatchSize = idolBatchSize;
+	List<HierarchicalConfiguration> dparams = xml
+	        .configurationsAt("dreDeleteRefParams.param");
+	for (HierarchicalConfiguration param : dparams) {
+	    setDeleteUrlParam(param.getString("[@name]"), param.getString(""));
+	}
+    }
+
+    @Override
+    protected void commitAddedDocument(QueuedAddedDocument document)
+	    throws IOException {
+	docsToAdd.add(document);
+	if (docsToAdd.size() % idolBatchSize == 0) {
+	    persistToIdol();
+	}
+    }
+
+    @Override
+    protected void commitDeletedDocument(QueuedDeletedDocument document)
+	    throws IOException {
+	docsToRemove.add(document);
+	if (docsToRemove.size() % idolBatchSize == 0) {
+	    deleteFromIdol();
+	}
+    }
+
+    /*
+     * @Override public void commit(){ URL obj; try { obj = new
+     * URL("http://"+this.idolHost); HttpURLConnection con = (HttpURLConnection)
+     * obj.openConnection();
+     * 
+     * // add reuqest header con.setRequestMethod("POST");
+     * con.setRequestProperty("User-Agent", "");
+     * con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+     * 
+     * String urlParameters = "/DRESYNC"; // Send post request
+     * con.setDoOutput(true); DataOutputStream wr = new
+     * DataOutputStream(con.getOutputStream()); wr.writeBytes(urlParameters);
+     * wr.flush(); wr.close();
+     * 
+     * int responseCode = con.getResponseCode();
+     * System.out.println("\nSending 'POST' request to URL : http"
+     * +this.idolHost); System.out.println("Post parameters : " +
+     * urlParameters); System.out.println("Response Code : " + responseCode);
+     * 
+     * BufferedReader in = new BufferedReader(new InputStreamReader(
+     * con.getInputStream())); String inputLine; StringBuffer response = new
+     * StringBuffer();
+     * 
+     * while ((inputLine = in.readLine()) != null) { response.append(inputLine);
+     * } in.close(); // print result System.out.println(response.toString()); }
+     * catch (MalformedURLException e) { e.printStackTrace(); } catch
+     * (ProtocolException e) { e.printStackTrace(); } catch (IOException e) {
+     * e.printStackTrace(); }
+     * 
+     * 
+     * 
+     * 
+     * 
+     * }
+     */
+    private void persistToIdol() {
+	LOG.info("Sending " + docsToAdd.size()
+	        + " documents to Idol for update.");
+	String baseUrl = "http://" + this.getIdolHost() + ":"
+	        + this.getIdolIndexPort() + "/DREADDDATA?";
+
+	for (QueuedAddedDocument qad : docsToAdd) {
+	    try {
+		this.addToIdol(baseUrl, qad.getContentStream(),
+		        qad.getMetadata());
+		LOG.debug(qad.getMetadata());
+	    } catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	    }
 	}
 
-	public String getIdolDbName() {
-		return idolDbName;
+	LOG.info("Done sending documents to Idol for update.");
+    }
+
+    private void deleteFromIdol() {
+	LOG.info("Sending " + docsToRemove.size()
+	        + " documents to Idol for deletion.");
+
+	try {
+	    for (QueuedDeletedDocument doc : docsToRemove) {
+		doc.deleteFromQueue();
+	    }
+	    docsToRemove.clear();
+	} catch (Exception e) {
+	    throw new CommitterException(
+		    "Cannot delete document batch from Idol.", e);
 	}
+	LOG.info("Done sending documents to Idol for deletion.");
+    }
 
-	public void setIdolDbName(String idolDbName) {
-		this.idolDbName = idolDbName;
+    @Override
+    protected void commitComplete() {
+	if (!docsToAdd.isEmpty()) {
+	    persistToIdol();
 	}
-
-	public String getIdolHost() {
-		return idolHost;
+	if (!docsToRemove.isEmpty()) {
+	    deleteFromIdol();
 	}
+    }
 
-	public void setIdolHost(String idolHost) {
-		this.idolHost = idolHost;
-	}
-
-	public int getIdolPort() {
-		return idolPort;
-	}
-
-	public void setIdolPort(int idolPort) {
-		this.idolPort = idolPort;
-	}
-
-	public List<QueuedAddedDocument> getDocsToAdd() {
-		return docsToAdd;
-	}
-
-	public List<QueuedDeletedDocument> getDocsToRemove() {
-		return docsToRemove;
-	}
-
-	public void setUpdateUrlParam(String name, String value) {
-		updateUrlParams.put(name, value);
-	}
-
-	public void setDeleteUrlParam(String name, String value) {
-		deleteUrlParams.put(name, value);
-	}
-
-	public String getUpdateUrlParam(String name) {
-		return updateUrlParams.get(name);
-	}
-
-	public String getDeleteUrlParam(String name) {
-		return deleteUrlParams.get(name);
-	}
-
-	public Set<String> getUpdateUrlParamNames() {
-		return updateUrlParams.keySet();
-	}
-
-	public Set<String> getDeleteUrlParamNames() {
-		return deleteUrlParams.keySet();
-	}
-
-	public Map<String, String> getUpdateUrlParams() {
-		return updateUrlParams;
-	}
-
-	public Map<String, String> getDeleteUrlParams() {
-		return deleteUrlParams;
-	}
-
-	public String getIdolUrl() {
-		return "http://" + this.idolHost + ":" + this.idolPort + "/";
-	}
-
-	private IdolResponse request(String url) {
-		IdolResponse ir = new IdolResponse();
-		HttpClient client = new DefaultHttpClient();
-		HttpPost post = new HttpPost(url);
-		// add header
-		post.setHeader("User-Agent", "");
-
-		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-
-		try {
-			post.setEntity(new UrlEncodedFormEntity(urlParameters));
-			HttpResponse response = client.execute(post);
-			LOG.debug("\nSending 'POST' request to URL : " + url);
-			LOG.debug("Post parameters : " + post.getEntity());
-			LOG.debug("Response Code : "
-					+ response.getStatusLine().getStatusCode());
-
-			BufferedReader rd = new BufferedReader(new InputStreamReader(
-					response.getEntity().getContent()));
-
-			StringBuffer result = new StringBuffer();
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				result.append(line);
-			}
-			ir.setResponse(result.toString());
-			LOG.debug(result.toString());
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return ir;
-	}
-
-	public void commitToIdol() {
-		this.request("http://" + this.getIdolHost() + ":"
-				+ this.getIdolIndexPort() + "/DRESYNC");
-	}
+    @Override
+    protected void saveToXML(XMLStreamWriter writer) throws XMLStreamException {
 	
-	private String getDreReference(Properties prop){
-		String dreReferenceValue="99";
-		for (Entry<String, List<String>> entry : prop.entrySet()) {
-			for (String value : entry.getValue()) {
-				LOG.debug("value: " + value);
-				if (entry.getKey().equals("document.reference")) {
-					dreReferenceValue = value;
-				}
-			}
-		}
-		
-		return dreReferenceValue;
-	}
-
-	//
-	private void addToIdol(String url, InputStream is, Properties prop)
-			throws IOException {
-		URL obj = new URL(url);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-		// add request header
-		con.setRequestMethod("POST");
-		con.setRequestProperty("User-Agent", "");
-		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-
-		String idolDocument = "";
-		//Create a database key for the idol idx document
-		idolDocument = idolDocument.concat("\n#DREREFERENCE ") + this.getDreReference(prop);
-
-		//Loop thru the list of properties and create idx fields accordingly.
-		for (Entry<String, List<String>> entry : prop.entrySet()) {
-			for (String value : entry.getValue()) {
-				LOG.debug("value: " + value);
-				idolDocument = idolDocument.concat("\n#DREFIELD "
-						+ entry.getKey() + "=\"" + value + "\"");
-			}
-		}
-		idolDocument = idolDocument.concat("\n#DREDBNAME "
-				+ this.getIdolDbName());
-		idolDocument = idolDocument.concat("\n#DRECONTENT\n"
-				+ IOUtils.toString(is));
-		idolDocument = idolDocument.concat("\n#DREENDDOC ");
-		idolDocument = idolDocument.concat("\n#DREENDDATAREFERENCE");
-
-		// Send post request
-		con.setDoOutput(true);
-		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-		wr.writeBytes(idolDocument);
-		wr.flush();
-		wr.close();
-
-		int responseCode = con.getResponseCode();
-		LOG.debug("\nSending 'POST' request to URL : " + url);
-		LOG.debug("Post parameters : " + idolDocument);
-		LOG.debug("Response Code : " + responseCode);
-
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-				con.getInputStream()));
-		String inputLine;
-		StringBuffer response = new StringBuffer();
-
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
-		}
-		in.close();
-
-		// print result
-		LOG.debug(response.toString());
-		// this.commitToIdol();
-
-	}
-
-	@Override
-	protected void saveToXML(XMLStreamWriter writer) throws XMLStreamException {
-		/*
-		 * writer.writeStartElement("solrURL"); writer.writeCharacters(solrURL);
-		 * writer.writeEndElement();
-		 * 
-		 * writer.writeStartElement("solrUpdateURLParams"); for (String name :
-		 * updateUrlParams.keySet()) { writer.writeStartElement("param");
-		 * writer.writeAttribute("name", name);
-		 * writer.writeCharacters(updateUrlParams.get(name));
-		 * writer.writeEndElement(); } writer.writeEndElement();
-		 * 
-		 * writer.writeStartElement("solrDeleteURLParams"); for (String name :
-		 * deleteUrlParams.keySet()) { writer.writeStartElement("param");
-		 * writer.writeAttribute("name", name);
-		 * writer.writeCharacters(deleteUrlParams.get(name));
-		 * writer.writeEndElement(); } writer.writeEndElement();
-		 * 
-		 * writer.writeStartElement("solrBatchSize");
-		 * writer.writeCharacters(ObjectUtils.toString(getSolrBatchSize()));
-		 * writer.writeEndElement();
-		 */
-	}
-
-	@Override
-	protected void loadFromXml(XMLConfiguration xml) {
-
-		setIdolHost(xml.getString("idolHost"));
-		setIdolPort(xml.getInt("idolPort", DEFAULT_IDOL_PORT));
-		setIdolIndexPort(xml.getInt("idolIndexPort", DEFAULT_IDOL_INDEX_PORT));
-		setIdolBatchSize(xml.getInt("idolBatchSize", DEFAULT_IDOL_BATCH_SIZE));
-		setBatchSize(xml.getInt("batchSize"));
-		setIdolDbName(xml.getString("idolDbName"));
-		LOG.debug("------" + xml.getString("idolDbName"));
-		List<HierarchicalConfiguration> uparams = xml
-				.configurationsAt("dreAddDataParams.param");
-		for (HierarchicalConfiguration param : uparams) {
-			setUpdateUrlParam(param.getString("[@name]"), param.getString(""));
-		}
-
-		List<HierarchicalConfiguration> dparams = xml
-				.configurationsAt("dreDeleteRefParams.param");
-		for (HierarchicalConfiguration param : dparams) {
-			setDeleteUrlParam(param.getString("[@name]"), param.getString(""));
-		}
-	}
-
-	@Override
-	protected void commitAddedDocument(QueuedAddedDocument document)
-			throws IOException {
-		docsToAdd.add(document);
-		if (docsToAdd.size() % idolBatchSize == 0) {
-			persistToIdol();
-		}
-	}
-
-	@Override
-	protected void commitDeletedDocument(QueuedDeletedDocument document)
-			throws IOException {
-		docsToRemove.add(document);
-		if (docsToRemove.size() % idolBatchSize == 0) {
-			deleteFromIdol();
-		}
-	}
-
-	/*
-	 * @Override public void commit(){ URL obj; try { obj = new
-	 * URL("http://"+this.idolHost); HttpURLConnection con = (HttpURLConnection)
-	 * obj.openConnection();
-	 * 
-	 * // add reuqest header con.setRequestMethod("POST");
-	 * con.setRequestProperty("User-Agent", "");
-	 * con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-	 * 
-	 * String urlParameters = "/DRESYNC"; // Send post request
-	 * con.setDoOutput(true); DataOutputStream wr = new
-	 * DataOutputStream(con.getOutputStream()); wr.writeBytes(urlParameters);
-	 * wr.flush(); wr.close();
-	 * 
-	 * int responseCode = con.getResponseCode();
-	 * System.out.println("\nSending 'POST' request to URL : http"
-	 * +this.idolHost); System.out.println("Post parameters : " +
-	 * urlParameters); System.out.println("Response Code : " + responseCode);
-	 * 
-	 * BufferedReader in = new BufferedReader(new InputStreamReader(
-	 * con.getInputStream())); String inputLine; StringBuffer response = new
-	 * StringBuffer();
-	 * 
-	 * while ((inputLine = in.readLine()) != null) { response.append(inputLine);
-	 * } in.close(); // print result System.out.println(response.toString()); }
-	 * catch (MalformedURLException e) { e.printStackTrace(); } catch
-	 * (ProtocolException e) { e.printStackTrace(); } catch (IOException e) {
-	 * e.printStackTrace(); }
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * }
-	 */
-	private void persistToIdol() {
-		LOG.info("Sending " + docsToAdd.size()
-				+ " documents to Idol for update.");
-		String baseUrl = "http://" + this.getIdolHost() + ":"
-				+ this.getIdolIndexPort() + "/DREADDDATA?";
-
-		for (QueuedAddedDocument qad : docsToAdd) {
-			try {
-				LOG.debug("============================");
-				Properties myMetadata = qad.getMetadata();
-				this.addToIdol(baseUrl, qad.getContentStream(),
-						qad.getMetadata());
-				LOG.debug(qad.getMetadata());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		LOG.info("Done sending documents to Idol for update.");
-	}
-
-	private void deleteFromIdol() {
-		LOG.info("Sending " + docsToRemove.size()
-				+ " documents to Idol for deletion.");
-
-		try {
-			// SolrServer server = solrServerFactory.createSolrServer(this);
-
-			// Commit Solr batch
-			// UpdateRequest request = new UpdateRequest();
-
-			// for (String name : deleteUrlParams.keySet()) {
-			// request.setParam(name, deleteUrlParams.get(name));
-			// }
-
-			// for (QueuedDeletedDocument doc : docsToRemove) {
-			// request.deleteById(doc.getReference());
-			// }
-
-			// request.process(server);
-			// server.commit();
-
-			// Delete queued documents after commit
-			for (QueuedDeletedDocument doc : docsToRemove) {
-				doc.deleteFromQueue();
-			}
-			docsToRemove.clear();
-		} catch (Exception e) {
-			throw new CommitterException(
-					"Cannot delete document batch from Idol.", e);
-		}
-		LOG.info("Done sending documents to Idol for deletion.");
-	}
-
-	@Override
-	protected void commitComplete() {
-		if (!docsToAdd.isEmpty()) {
-			persistToIdol();
-		}
-		if (!docsToRemove.isEmpty()) {
-			deleteFromIdol();
-		}
-	}
-
-	public void create(String idolDbName) {
-		String url = "http://" + this.getIdolHost() + ":"
-				+ this.getIdolIndexPort() + "/DRECREATEDBASE?DREdbname="
-				+ idolDbName;
-		request(url);
-	}
-
-	public void delete(String idolDbName) {
-		String url = "http://" + this.getIdolHost() + ":"
-				+ this.getIdolIndexPort() + "/DREREMOVEDBASE?DREdbname="
-				+ idolDbName;
-		request(url);
-	}
-
-	public void truncate(String idolDbName) {
-		String url = "http://" + this.getIdolHost() + ":"
-				+ this.getIdolIndexPort() + "/DREDELETEDBASE?DREdbname="
-				+ idolDbName;
-		request(url);
-	}
+    }
 
 }
