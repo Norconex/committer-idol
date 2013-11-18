@@ -239,6 +239,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         return deleteUrlParams;
     }
 
+    // TODO check if http:// is already in the string
     public String getIdolUrl() {
         return "http://" + this.idolHost + ":" + this.idolPort + "/";
     }
@@ -398,6 +399,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         }
     }
 
+    // TODO need to refactor the url string into a method...
     private void persistToIdol() {
         LOG.info("Sending " + docsToAdd.size()
                 + " documents to Idol for update.");
