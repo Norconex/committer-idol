@@ -57,9 +57,9 @@ import com.norconex.commons.lang.map.Properties;
 /**
  * Commits documents to Autonomy IDOL Server via a rest api.
  * <p>
- * XML configuration usage: Stephen was here today.....
+ * XML configuration usage: Martin was here today.....
  * </p>
- *
+ * 
  * <pre>
  *   &lt;committer class="com.norconex.committer.idol.IdolCommitter"&gt;
  *      &lt;idolHost&gt;(Host to IDOL.)&lt;/idolHost&gt;
@@ -92,7 +92,7 @@ import com.norconex.commons.lang.map.Properties;
  *      &lt;/idolBatchSize&gt;
  *   &lt;/committer&gt;
  * </pre>
- *
+ * 
  * @author <a href="mailto:stephen.jacob@norconex.com">Stephen Jacob</a>
  */
 @SuppressWarnings("restriction")
