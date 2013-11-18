@@ -57,7 +57,7 @@ import com.norconex.commons.lang.map.Properties;
 /**
  * Commits documents to Autonomy IDOL Server via a rest api.
  * <p>
- * XML configuration usage:
+ * XML configuration usage: Stephen was here today.....
  * </p>
  *
  * <pre>
