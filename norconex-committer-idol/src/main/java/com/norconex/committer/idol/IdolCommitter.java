@@ -301,6 +301,13 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         return dreReferenceValue;
     }
 
+    /**
+     *
+     * @param url
+     * @param is
+     * @param prop
+     * @throws IOException
+     */
     private void addToIdol(String url, InputStream is, Properties prop)
             throws IOException {
         URL obj = new URL(url);
@@ -412,7 +419,6 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
                         qad.getMetadata());
                 LOG.debug(qad.getMetadata());
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
