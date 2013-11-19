@@ -52,8 +52,8 @@ public class IdolServer {
 	    e.printStackTrace();
 	} catch (IOException e) {
 	    LOG.error("I got an I/O problem trying to connect to the server");
+	    e.printStackTrace();
 	}
-
 	return con;
     }
 
