@@ -234,48 +234,6 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 	return "http://" + this.idolHost + ":" + this.idolIndexPort + "/";
     }
 
-    // private String request(String url) {
-    // String idolResponse = null;
-    // HttpClient client = new DefaultHttpClient();
-    // HttpPost post = new HttpPost(url);
-    // // add header
-    // post.setHeader("User-Agent", "");
-    //
-    // List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-    //
-    // try {
-    // post.setEntity(new UrlEncodedFormEntity(urlParameters));
-    // HttpResponse response = client.execute(post);
-    // LOG.debug("\nSending 'POST' request to URL : " + url);
-    // LOG.debug("Post parameters : " + post.getEntity());
-    // LOG.debug("Response Code : "
-    // + response.getStatusLine().getStatusCode());
-    //
-    // BufferedReader rd = new BufferedReader(new InputStreamReader(
-    // response.getEntity().getContent(), "UTF-8"));
-    //
-    // StringBuffer result = new StringBuffer();
-    // String line = "";
-    // while ((line = rd.readLine()) != null) {
-    // result.append(line);
-    // }
-    // idolResponse = result.toString();
-    // LOG.debug(result.toString());
-    // } catch (UnsupportedEncodingException e) {
-    // e.printStackTrace();
-    // } catch (ClientProtocolException e) {
-    // e.printStackTrace();
-    // } catch (IOException e) {
-    // e.printStackTrace();
-    // }
-    //
-    // return idolResponse;
-    // }
-    //
-    // public void commitToIdol() {
-    // this.request("http://" + this.getIdolHost() + ":"
-    // + this.getIdolIndexPort() + "/DRESYNC");
-    // }
 
     private String getDreReference(Properties prop) {
         String dreReferenceValue = "99";
@@ -331,7 +289,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     }
 
 
-    private void addToIdol(String url, InputStream is, Properties properties)
+    private void addToIdol(InputStream is, Properties properties)
             throws IOException {
 
         String idolDocument = buildIdolDocument(is, properties);
@@ -380,22 +338,24 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         }
     }
 
-    // TODO need to refactor the url string into a method...
     private void persistToIdol() {
         LOG.info("Sending " + docsToAdd.size()
                 + " documents to Idol for update.");
-        String baseUrl = "http://" + this.getIdolHost() + ":"
-                + this.getIdolIndexPort() + "/DREADDDATA?";
-
         for (QueuedAddedDocument qad : docsToAdd) {
             try {
-                this.addToIdol(baseUrl, qad.getContentStream(),
+		this.addToIdol(qad.getContentStream(),
                         qad.getMetadata());
                 LOG.debug(qad.getMetadata());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
+	// Delete queued documents after commit
+	for (QueuedAddedDocument doc : docsToAdd) {
+	    doc.deleteFromQueue();
+	}
+	docsToAdd.clear();
 
         LOG.info("Done sending documents to Idol for update.");
     }
