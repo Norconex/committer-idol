@@ -18,14 +18,8 @@
  */
 package com.norconex.committer.idol;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,13 +33,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -59,7 +46,7 @@ import com.norconex.commons.lang.map.Properties;
  * <p>
  * XML configuration usage: Martin was here today.....
  * </p>
- * 
+ *
  * <pre>
  *   &lt;committer class="com.norconex.committer.idol.IdolCommitter"&gt;
  *      &lt;idolHost&gt;(Host to IDOL.)&lt;/idolHost&gt;
@@ -92,7 +79,7 @@ import com.norconex.commons.lang.map.Properties;
  *      &lt;/idolBatchSize&gt;
  *   &lt;/committer&gt;
  * </pre>
- * 
+ *
  * @author <a href="mailto:stephen.jacob@norconex.com">Stephen Jacob</a>
  */
 @SuppressWarnings("restriction")
@@ -147,7 +134,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     private int idolIndexPort;
 
     /**
-     * Getter for the variable IdolIndexPort
+     * . Getter for the variable IdolIndexPort
      *
      * @return idolIndexPort
      */
@@ -159,6 +146,9 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         this.idolIndexPort = idolIndexPort;
     }
 
+    /**
+     *
+     */
     private final List<QueuedAddedDocument> docsToAdd = new ArrayList<QueuedAddedDocument>();
 
     private final List<QueuedDeletedDocument> docsToRemove = new ArrayList<QueuedDeletedDocument>();
@@ -241,51 +231,51 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 
     // TODO check if http:// is already in the string
     public String getIdolUrl() {
-        return "http://" + this.idolHost + ":" + this.idolPort + "/";
+	return "http://" + this.idolHost + ":" + this.idolIndexPort + "/";
     }
 
-    private String request(String url) {
-        String idolResponse = null;
-        HttpClient client = new DefaultHttpClient();
-        HttpPost post = new HttpPost(url);
-        // add header
-        post.setHeader("User-Agent", "");
-
-        List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-
-        try {
-            post.setEntity(new UrlEncodedFormEntity(urlParameters));
-            HttpResponse response = client.execute(post);
-            LOG.debug("\nSending 'POST' request to URL : " + url);
-            LOG.debug("Post parameters : " + post.getEntity());
-            LOG.debug("Response Code : "
-                    + response.getStatusLine().getStatusCode());
-
-            BufferedReader rd = new BufferedReader(new InputStreamReader(
-                    response.getEntity().getContent(), "UTF-8"));
-
-            StringBuffer result = new StringBuffer();
-            String line = "";
-            while ((line = rd.readLine()) != null) {
-                result.append(line);
-            }
-            idolResponse = result.toString();
-            LOG.debug(result.toString());
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (ClientProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return idolResponse;
-    }
-
-    public void commitToIdol() {
-        this.request("http://" + this.getIdolHost() + ":"
-                + this.getIdolIndexPort() + "/DRESYNC");
-    }
+    // private String request(String url) {
+    // String idolResponse = null;
+    // HttpClient client = new DefaultHttpClient();
+    // HttpPost post = new HttpPost(url);
+    // // add header
+    // post.setHeader("User-Agent", "");
+    //
+    // List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+    //
+    // try {
+    // post.setEntity(new UrlEncodedFormEntity(urlParameters));
+    // HttpResponse response = client.execute(post);
+    // LOG.debug("\nSending 'POST' request to URL : " + url);
+    // LOG.debug("Post parameters : " + post.getEntity());
+    // LOG.debug("Response Code : "
+    // + response.getStatusLine().getStatusCode());
+    //
+    // BufferedReader rd = new BufferedReader(new InputStreamReader(
+    // response.getEntity().getContent(), "UTF-8"));
+    //
+    // StringBuffer result = new StringBuffer();
+    // String line = "";
+    // while ((line = rd.readLine()) != null) {
+    // result.append(line);
+    // }
+    // idolResponse = result.toString();
+    // LOG.debug(result.toString());
+    // } catch (UnsupportedEncodingException e) {
+    // e.printStackTrace();
+    // } catch (ClientProtocolException e) {
+    // e.printStackTrace();
+    // } catch (IOException e) {
+    // e.printStackTrace();
+    // }
+    //
+    // return idolResponse;
+    // }
+    //
+    // public void commitToIdol() {
+    // this.request("http://" + this.getIdolHost() + ":"
+    // + this.getIdolIndexPort() + "/DRESYNC");
+    // }
 
     private String getDreReference(Properties prop) {
         String dreReferenceValue = "99";
@@ -302,67 +292,51 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     }
 
     /**
+     * Builds an idol document. An example of an idol document would look like
+     * this: <br>#DREREFERENCE 1 <br>#DRETITLE Title Goes Here <br>#DRECONTENT<br> Content Goes
+     * Here <br>#DREDBNAME test <br>#DREENDDOC <br>#DREENDDATAREFERENCE
      *
-     * @param url
      * @param is
-     * @param prop
-     * @throws IOException
+     * @param properties
+     * @return idolDocument
      */
-    private void addToIdol(String url, InputStream is, Properties prop)
-            throws IOException {
-        URL obj = new URL(url);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-        // add request header
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", "");
-        con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-
+    private String buildIdolDocument(InputStream is, Properties properties) {
         String idolDocument = "";
-        // Create a database key for the idol idx document
-        idolDocument = idolDocument.concat("\n#DREREFERENCE ")
-                + this.getDreReference(prop);
+        try {
+            // Create a database key for the idol idx document
+            idolDocument = idolDocument.concat("\n#DREREFERENCE ")
+                    + this.getDreReference(properties);
 
-        // Loop thru the list of properties and create idx fields accordingly.
-        for (Entry<String, List<String>> entry : prop.entrySet()) {
-            for (String value : entry.getValue()) {
-                LOG.debug("value: " + value);
-                idolDocument = idolDocument.concat("\n#DREFIELD "
-                        + entry.getKey() + "=\"" + value + "\"");
+            // Loop thru the list of properties and create idx fields
+            // accordingly.
+            for (Entry<String, List<String>> entry : properties.entrySet()) {
+                for (String value : entry.getValue()) {
+                    LOG.debug("value: " + value);
+                    idolDocument = idolDocument.concat("\n#DREFIELD "
+                            + entry.getKey() + "=\"" + value + "\"");
+                }
             }
+            idolDocument = idolDocument.concat("\n#DREDBNAME "
+                    + this.getIdolDbName());
+
+            idolDocument = idolDocument.concat("\n#DRECONTENT\n"
+                    + IOUtils.toString(is));
+
+            idolDocument = idolDocument.concat("\n#DREENDDOC ");
+            idolDocument = idolDocument.concat("\n#DREENDDATAREFERENCE");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        idolDocument = idolDocument.concat("\n#DREDBNAME "
-                + this.getIdolDbName());
-        idolDocument = idolDocument.concat("\n#DRECONTENT\n"
-                + IOUtils.toString(is));
-        idolDocument = idolDocument.concat("\n#DREENDDOC ");
-        idolDocument = idolDocument.concat("\n#DREENDDATAREFERENCE");
+        return idolDocument;
+    }
 
-        // Send post request
-        con.setDoOutput(true);
-        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-        wr.writeBytes(idolDocument);
-        wr.flush();
-        wr.close();
 
-        int responseCode = con.getResponseCode();
-        LOG.debug("\nSending 'POST' request to URL : " + url);
-        LOG.debug("Post parameters : " + idolDocument);
-        LOG.debug("Response Code : " + responseCode);
+    private void addToIdol(String url, InputStream is, Properties properties)
+            throws IOException {
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-                con.getInputStream(), "UTF-8"));
-        String inputLine = null;
-        StringBuffer response = new StringBuffer();
-
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
-        }
-        in.close();
-
-        // print result
-        LOG.debug(response.toString());
-        // this.commitToIdol();
+        String idolDocument = buildIdolDocument(is, properties);
+	IdolServer.add(this.getIdolUrl(), idolDocument);
+	IdolServer.sync(this.getIdolUrl());
 
     }
 
