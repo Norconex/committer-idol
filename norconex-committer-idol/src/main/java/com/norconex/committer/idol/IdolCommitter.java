@@ -297,15 +297,19 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         return idolDocument;
     }
 
-
     private void addToIdol(InputStream is, Properties properties)
             throws IOException {
-
         String idolDocument = buildIdolDocument(is, properties);
         IdolServer idolServer = new IdolServer();
         idolServer.add(this.getIdolUrl(), idolDocument);
         idolServer.sync(this.getIdolUrl());
 
+    }
+
+    private void delFromIdol(String reference) {
+        IdolServer idolServer = new IdolServer();
+        idolServer.delete(this.getIdolUrl(), reference);
+        idolServer.sync(this.getIdolUrl());
     }
 
     @Override
@@ -373,7 +377,14 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     private void deleteFromIdol() {
         LOG.info("Sending " + docsToRemove.size()
                 + " documents to Idol for deletion.");
-
+        for (QueuedDeletedDocument doc : docsToRemove) {
+            try {
+                this.delFromIdol(doc.getReference());
+                LOG.debug("======= DELETE REFERENCE " + doc.getReference());
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
+        }
         try {
             for (QueuedDeletedDocument doc : docsToRemove) {
                 doc.deleteFromQueue();

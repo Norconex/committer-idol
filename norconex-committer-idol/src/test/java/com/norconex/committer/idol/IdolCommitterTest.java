@@ -87,21 +87,23 @@ public class IdolCommitterTest {
     	//committer.delete("test");
     }
 
-	@Test
-	public void testXmlLoad() {
-		//Verify that the values from the xml file have been loaded into the Idol committer
-		assertTrue(committer.getIdolBatchSize() == 15);
-		assertTrue(committer.getIdolHost().equalsIgnoreCase("192.168.0.202"));
-		System.out.println("IdolPort" + committer.getIdolPort());
-		assertTrue(committer.getIdolPort() == 9000);
-		assertTrue(committer.getIdolIndexPort() == 9001);
-		assertTrue(committer.getUpdateUrlParam("priority").equalsIgnoreCase("100"));
-		assertTrue(committer.getDeleteUrlParam("priority").equalsIgnoreCase("100"));
-	}
+    @Test
+    public void testXmlLoad() {
+        // Verify that the values from the xml file have been loaded into the
+        // Idol committer
+        assertTrue(committer.getIdolBatchSize() == 15);
+        assertTrue(committer.getIdolHost().equalsIgnoreCase("192.168.0.202"));
+        System.out.println("IdolPort" + committer.getIdolPort());
+        assertTrue(committer.getIdolPort() == 9000);
+        assertTrue(committer.getIdolIndexPort() == 9001);
+        assertTrue(committer.getUpdateUrlParam("priority").equalsIgnoreCase(
+                "100"));
+        assertTrue(committer.getDeleteUrlParam("priority").equalsIgnoreCase(
+                "100"));
+    }
 
-	@Test
+    @Test
     public void testCommitAdd() throws Exception {
-
         String content = "hello world!";
         File file = createFile(content);
         String id = "1";
@@ -129,6 +131,27 @@ public class IdolCommitterTest {
         writer.write(content);
         writer.close();
         return file;
+    }
+
+    @Test
+    public void testCommitDelete() throws Exception {
+        String content = "hello world!";
+        File file = createFile(content);
+        String id = "1";
+        Properties metadata = new Properties();
+        metadata.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id);
+        metadata.addString(
+                "description",
+                "Norconex is an enterprise search technology services provider that helps businesses better organize ");
+        metadata.addString(
+                "keywords",
+                "enterprise search, solr, autonomy, attivio, google, microsoft fast, search analytics, search support, e-discovery, web crawler, open-source, taxonomy, metadata, search vendor evaluation, ottawa, gatineau, ontario, quebec, canada");
+        metadata.addString("title", "Norconex | Enterprise Search Experts");
+
+        //Rmove doc from idol
+        committer.queueRemove(id, file, metadata);
+
+        committer.commit();
     }
 
 }

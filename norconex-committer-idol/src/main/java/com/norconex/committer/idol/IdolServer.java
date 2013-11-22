@@ -23,11 +23,12 @@ public class IdolServer {
 	return serverResponse;
     }
 
-    public String delete(String url, String idolDocument) {
-        url = url.concat("DREDELETEREF?");
+    public String delete(String url, String reference) {
+        reference = reference.concat("&DREDbName=test");
+        url = url.concat("DREDELETEREF?Docs=");
         String serverResponse = "";
         HttpURLConnection con = getConnection(url);
-        post(con, url, idolDocument);
+        post(con, url, reference);
 
         return serverResponse;
 
@@ -76,7 +77,7 @@ public class IdolServer {
 	    wr.flush();
 	    wr.close();
 	    int responseCode = con.getResponseCode();
-	    LOG.debug("\nSending 'POST' request to URL : " + url);
+            LOG.debug("\nSending 'POST' request to URL : " + url + parameters);
 	    LOG.debug("Post parameters : " + parameters);
 	    LOG.debug("Server Response Code : " + responseCode);
 	    BufferedReader in = new BufferedReader(new InputStreamReader(
