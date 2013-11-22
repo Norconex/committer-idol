@@ -46,7 +46,7 @@ import com.norconex.commons.lang.map.Properties;
  * <p>
  * XML configuration usage:
  * </p>
- * 
+ *
  * <pre>
  *   &lt;committer class="com.norconex.committer.idol.IdolCommitter"&gt;
  *      &lt;idolHost&gt;(Host to IDOL.)&lt;/idolHost&gt;
@@ -79,7 +79,7 @@ import com.norconex.commons.lang.map.Properties;
  *      &lt;/idolBatchSize&gt;
  *   &lt;/committer&gt;
  * </pre>
- * 
+ *
  * @author <a href="mailto:stephen.jacob@norconex.com">Stephen Jacob</a>
  */
 @SuppressWarnings("restriction")
@@ -251,8 +251,14 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 
     /**
      * Builds an idol document. An example of an idol document would look like
-     * this: <br>#DREREFERENCE 1 <br>#DRETITLE Title Goes Here <br>#DRECONTENT<br> Content Goes
-     * Here <br>#DREDBNAME test <br>#DREENDDOC <br>#DREENDDATAREFERENCE
+     * this: <br>
+     * #DREREFERENCE 1 <br>
+     * #DRETITLE Title Goes Here <br>
+     * #DRECONTENT<br>
+     * Content Goes Here <br>
+     * #DREDBNAME test <br>
+     * #DREENDDOC <br>
+     * #DREENDDATAREFERENCE
      *
      * @param is
      * @param properties
@@ -284,7 +290,10 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
             idolDocument = idolDocument.concat("\n#DREENDDATAREFERENCE");
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(is);
         }
+
         return idolDocument;
     }
 
@@ -293,8 +302,9 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
             throws IOException {
 
         String idolDocument = buildIdolDocument(is, properties);
-	IdolServer.add(this.getIdolUrl(), idolDocument);
-	IdolServer.sync(this.getIdolUrl());
+        IdolServer idolServer = new IdolServer();
+        idolServer.add(this.getIdolUrl(), idolDocument);
+        idolServer.sync(this.getIdolUrl());
 
     }
 

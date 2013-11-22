@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 public class IdolServer {
     private static final Logger LOG = LogManager.getLogger(IdolServer.class);
 
-    public static String add(String url, String idolDocument) {
+    public String add(String url, String idolDocument) {
 	url = url.concat("DREADDDATA?");
 	String serverResponse = "";
 	HttpURLConnection con = getConnection(url);
@@ -23,7 +23,17 @@ public class IdolServer {
 	return serverResponse;
     }
 
-    public static String sync(String url) {
+    public String delete(String url, String idolDocument) {
+        url = url.concat("DREDELETEREF?");
+        String serverResponse = "";
+        HttpURLConnection con = getConnection(url);
+        post(con, url, idolDocument);
+
+        return serverResponse;
+
+    }
+
+    public String sync(String url) {
 	url = url.concat("DRESYNC");
 	String serverResponse = "";
 	HttpURLConnection con = getConnection(url);
@@ -32,7 +42,7 @@ public class IdolServer {
 	return serverResponse;
     }
 
-    private static HttpURLConnection getConnection(String url) {
+    private HttpURLConnection getConnection(String url) {
 	URL obj;
 	HttpURLConnection con = null;
 	try {
