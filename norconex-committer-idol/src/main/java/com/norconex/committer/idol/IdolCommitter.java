@@ -234,7 +234,6 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 	return "http://" + this.idolHost + ":" + this.idolIndexPort + "/";
     }
 
-
     private String getDreReference(Properties prop) {
         String dreReferenceValue = "99";
         for (Entry<String, List<String>> entry : prop.entrySet()) {
@@ -306,9 +305,9 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 
     }
 
-    private void delFromIdol(String reference) {
+    private void delFromIdol(String reference, String dreDbName) {
         IdolServer idolServer = new IdolServer();
-        idolServer.delete(this.getIdolUrl(), reference);
+        idolServer.delete(this.getIdolUrl(), reference, dreDbName);
         idolServer.sync(this.getIdolUrl());
     }
 
@@ -379,7 +378,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
                 + " documents to Idol for deletion.");
         for (QueuedDeletedDocument doc : docsToRemove) {
             try {
-                this.delFromIdol(doc.getReference());
+                this.delFromIdol(doc.getReference(), idolDbName);
                 LOG.debug("======= DELETE REFERENCE " + doc.getReference());
             } catch (Exception e) {
                 // TODO: handle exception
