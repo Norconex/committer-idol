@@ -97,8 +97,9 @@ public class IdolServer {
      */
     private void post(HttpURLConnection con, String url,
             String parameters) {
-        DataOutputStream wr;
+
         try {
+            DataOutputStream wr;
             LOG.debug("Parameter = " + parameters);
             wr = new DataOutputStream(con.getOutputStream());
             wr.writeBytes(parameters);
