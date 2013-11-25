@@ -84,29 +84,7 @@ import com.norconex.commons.lang.map.Properties;
  */
 @SuppressWarnings("restriction")
 public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
-    /*
-     * DREADD Indexes content into IDOL server. DREADDDATA Indexes content over
-     * socket into IDOL server. DREBACKUP Backs up IDOL server's Data index.
-     * DRECHANGEMETA Changes documents' meta fields. DRECOMPACT Compacts IDOL
-     * server's Data index. DRECREATEDBASE Creates an IDOL server database.
-     * DREDELDBASE Deletes all documents from an IDOL server database.
-     * DREDELETEDOC Deletes documents by ID. DREDELETEREF Deletes documents by
-     * reference. DREEXPIRE Expires documents from IDOL server. DREEXPORTIDX
-     * Exports IDX files from IDOL server. DREEXPORTREMOTE Exports XML files
-     * from one IDOL server and indexes them into another. DREEXPORTXML Exports
-     * XML files from IDOL server. DREFLUSHANDPAUSE Prepares IDOL server for a
-     * snapshot (hot backup). DREINITIAL Resets IDOL server's Data index.
-     * DREREMOVEDBASE Deletes an IDOL server database. DREREPLACE Changes
-     * documents' field values. DRERESET Activates configuration-file changes.
-     * DRERESIZEINDEXCACHE Dynamically resizes the index cache. DRESYNC Flushes
-     * to disk the index cache. DREUNDELETEDOC Restores deleted documents.
-     */
 
-    /**
-     * Making sure that if we read/write an object to file we we are using the
-     * same version of the object and not new version with new incompatible
-     * datatype.
-     */
     private static final long serialVersionUID = 1;
 
     /**
@@ -132,13 +110,10 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     private String idolHost;
     private int idolPort;
     private int idolIndexPort;
+    Object QueueAddLock = new Object();
+    Object QueueDeleteLock = new Object();
 
-    /**
-     * . Getter for the variable IdolIndexPort
-     *
-     * @return idolIndexPort
-     */
-    public int getIdolIndexPort() {
+    int getIdolIndexPort() {
         return idolIndexPort;
     }
 
@@ -354,21 +329,23 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     private void persistToIdol() {
         LOG.info("Sending " + docsToAdd.size()
                 + " documents to Idol for update.");
-        for (QueuedAddedDocument qad : docsToAdd) {
-            try {
-		this.addToIdol(qad.getContentStream(),
-                        qad.getMetadata());
-                LOG.debug(qad.getMetadata());
-            } catch (IOException e) {
-                e.printStackTrace();
+        // making sure the list is thread safe
+        synchronized (QueueAddLock) {
+            for (QueuedAddedDocument qad : docsToAdd) {
+                try {
+                    this.addToIdol(qad.getContentStream(), qad.getMetadata());
+                    LOG.debug(qad.getMetadata());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
-	// Delete queued documents after commit
-	for (QueuedAddedDocument doc : docsToAdd) {
-	    doc.deleteFromQueue();
-	}
-	docsToAdd.clear();
+        // Delete queued documents after commit
+        for (QueuedAddedDocument doc : docsToAdd) {
+            doc.deleteFromQueue();
+        }
+        docsToAdd.clear();
 
         LOG.info("Done sending documents to Idol for update.");
     }
@@ -376,22 +353,24 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     private void deleteFromIdol() {
         LOG.info("Sending " + docsToRemove.size()
                 + " documents to Idol for deletion.");
-        for (QueuedDeletedDocument doc : docsToRemove) {
-            try {
-                this.delFromIdol(doc.getReference(), idolDbName);
-                LOG.debug("======= DELETE REFERENCE " + doc.getReference());
-            } catch (Exception e) {
-                // TODO: handle exception
-            }
-        }
-        try {
+        // Making sure the list is thread safe
+        synchronized (QueueDeleteLock) {
             for (QueuedDeletedDocument doc : docsToRemove) {
-                doc.deleteFromQueue();
+                try {
+                    this.delFromIdol(doc.getReference(), idolDbName);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            docsToRemove.clear();
-        } catch (Exception e) {
-            throw new CommitterException(
-                    "Cannot delete document batch from Idol.", e);
+            try {
+                for (QueuedDeletedDocument doc : docsToRemove) {
+                    doc.deleteFromQueue();
+                }
+                docsToRemove.clear();
+            } catch (Exception e) {
+                throw new CommitterException(
+                        "Cannot delete document batch from Idol.", e);
+            }
         }
         LOG.info("Done sending documents to Idol for deletion.");
     }

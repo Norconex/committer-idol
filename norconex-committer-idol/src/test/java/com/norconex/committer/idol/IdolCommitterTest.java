@@ -115,9 +115,7 @@ public class IdolCommitterTest {
 
         // Add new doc to Idol
         committer.queueAdd(id, file, metadata);
-
         committer.commit();
-
 
         // Check that it's in Idol
         System.out.println(committer.getIdolDbName());
@@ -133,7 +131,7 @@ public class IdolCommitterTest {
         return file;
     }
 
-    @Test
+    // @Test
     public void testCommitDelete() throws Exception {
         String content = "hello world!";
         File file = createFile(content);
@@ -148,7 +146,7 @@ public class IdolCommitterTest {
                 "enterprise search, solr, autonomy, attivio, google, microsoft fast, search analytics, search support, e-discovery, web crawler, open-source, taxonomy, metadata, search vendor evaluation, ottawa, gatineau, ontario, quebec, canada");
         metadata.addString("title", "Norconex | Enterprise Search Experts");
 
-        //Rmove doc from idol
+        // Remove doc from idol
         committer.queueRemove(id, file, metadata);
 
         committer.commit();

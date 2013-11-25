@@ -12,6 +12,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 /**
+ * Class that helps adding, removing and committing document to idol
  *
  * @author martinfournier
  *
@@ -19,33 +20,49 @@ import org.apache.log4j.Logger;
 public class IdolServer {
     private static final Logger LOG = LogManager.getLogger(IdolServer.class);
 
-    public String add(String url, String idolDocument) {
+    /**
+     * Generate the proper REST url and add the idol document
+     *
+     * @param url
+     * @param idolDocument
+     */
+    public void add(String url, String idolDocument) {
         url = url.concat("DREADDDATA?");
-        String serverResponse = "";
         HttpURLConnection con = getConnection(url);
         post(con, url, idolDocument);
-
-        return serverResponse;
     }
 
-    public String delete(String url, String reference, String dreDbName) {
+    /**
+     * Genereate the proper REST url and delete the idol document
+     *
+     * @param url
+     * @param reference
+     * @param dreDbName
+     */
+    public void delete(String url, String reference, String dreDbName) {
         url = url.concat("DREDELETEREF?Docs=" + reference + "&DREDbName="
                 + dreDbName);
-        String serverResponse = "";
         HttpURLConnection con = getConnection(url);
         post(con, url, reference);
-        return serverResponse;
     }
 
-    public String sync(String url) {
+    /**
+     * Perform a DRESYNC / Commit on the idol Database.
+     *
+     * @param url
+     */
+    public void sync(String url) {
         url = url.concat("DRESYNC");
-        String serverResponse = "";
         HttpURLConnection con = getConnection(url);
         post(con, url, "");
-
-        return serverResponse;
     }
 
+    /**
+     * Return a HTTP connection with the proper Post method and properties.
+     *
+     * @param url
+     * @return HttpUrlConnection object
+     */
     private HttpURLConnection getConnection(String url) {
         URL obj;
         HttpURLConnection con = null;
@@ -71,6 +88,13 @@ public class IdolServer {
         return con;
     }
 
+    /**
+     * Add/Remove/Commit documents based on the parameters passed to the method.
+     *
+     * @param con
+     * @param url
+     * @param parameters
+     */
     private void post(HttpURLConnection con, String url,
             String parameters) {
         DataOutputStream wr;
