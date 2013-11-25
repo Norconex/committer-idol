@@ -33,8 +33,8 @@ public class IdolServer {
     }
 
     /**
-     * Genereate the proper REST url and delete the idol document
-     *
+     * Generate the proper REST url and delete the idol document
+     * 
      * @param url
      * @param reference
      * @param dreDbName
