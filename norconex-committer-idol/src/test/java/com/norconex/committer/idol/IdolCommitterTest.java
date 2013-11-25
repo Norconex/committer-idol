@@ -1,20 +1,20 @@
-/* Copyright 2010-2013 Norconex Inc.
+/*
+ * Copyright 2010-2013 Norconex Inc.
  *
  * This file is part of Norconex Idol Committer.
  *
- * Norconex Idol Committer is free software: you can redistribute it
- * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * Norconex Idol Committer is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- * Norconex Idol Committer is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Norconex Idol Committer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with Norconex Idol Committer.
- * If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with
+ * Norconex Idol Committer. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.norconex.committer.idol;
@@ -38,8 +38,6 @@ import org.junit.rules.TemporaryFolder;
 import com.norconex.committer.ICommitter;
 import com.norconex.commons.lang.map.Properties;
 
-
-
 public class IdolCommitterTest {
 
     @Rule
@@ -52,46 +50,47 @@ public class IdolCommitterTest {
     @Before
     public void setup() throws Exception {
 
-    	//Create an instance of the Idol committer
-    	committer = new IdolCommitter();
+        // Create an instance of the Idol committer
+        committer = new IdolCommitter();
 
-    	//TODO:  Setup the Idol Factory
+        // TODO: Setup the Idol Factory
         /*
     	*/
 
-    	File configFile = new File("src/test/resources/idolconfig.xml");
-    	XMLConfiguration xml = null;
-    	XMLConfiguration committerConfig = null;
-		try {
-			xml = new XMLConfiguration(configFile);
-			List<HierarchicalConfiguration> committerNode = xml.configurationsAt("crawlers.crawler.committer");
-			committerConfig = new XMLConfiguration(committerNode.get(0));
-		} catch (ConfigurationException e) {
-			e.printStackTrace();
-		}
+        File configFile = new File("src/test/resources/idolconfig.xml");
+        XMLConfiguration xml = null;
+        XMLConfiguration committerConfig = null;
+        try {
+            xml = new XMLConfiguration(configFile);
+            List<HierarchicalConfiguration> committerNode = xml
+                    .configurationsAt("crawlers.crawler.committer");
+            committerConfig = new XMLConfiguration(committerNode.get(0));
+        } catch (ConfigurationException e) {
+            e.printStackTrace();
+        }
 
-		//Load the xml configuration for the Idol committer
-		committer.loadFromXml(committerConfig);
+        // Load the xml configuration for the Idol committer
+        committer.loadFromXml(committerConfig);
 
-		//Setup the queue
+        // Setup the queue
         queue = tempFolder.newFolder("queue");
         committer.setQueueDir(queue.toString());
 
-        //Create the databse to do the integration test
-        //System.out.println(committer.getIdolDbName());
-        //committer.create("test");
+        // Create the databse to do the integration test
+        // System.out.println(committer.getIdolDbName());
+        // committer.create("test");
     }
 
     @After
-    public void teardown() throws Exception{
-    	//committer.delete("test");
+    public void teardown() throws Exception {
+        // committer.delete("test");
     }
 
     @Test
     public void testXmlLoad() {
         // Verify that the values from the xml file have been loaded into the
         // Idol committer
-        assertTrue(committer.getIdolBatchSize() == 15);
+        assertTrue(committer.getIdolBatchSize() == 50);
         assertTrue(committer.getIdolHost().equalsIgnoreCase("192.168.0.202"));
         System.out.println("IdolPort" + committer.getIdolPort());
         assertTrue(committer.getIdolPort() == 9000);
@@ -109,21 +108,21 @@ public class IdolCommitterTest {
         String id = "1";
         Properties metadata = new Properties();
         metadata.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id);
-        metadata.addString("description", "Norconex is an enterprise search technology services provider that helps businesses better organize ");
-        metadata.addString("keywords","enterprise search, solr, autonomy, attivio, google, microsoft fast, search analytics, search support, e-discovery, web crawler, open-source, taxonomy, metadata, search vendor evaluation, ottawa, gatineau, ontario, quebec, canada");
-        metadata.addString("title","Norconex | Enterprise Search Experts");
+        metadata.addString(
+                "description",
+                "Norconex is an enterprise search technology services provider that helps businesses better organize ");
+        metadata.addString(
+                "keywords",
+                "enterprise search, solr, autonomy, attivio, google, microsoft fast, search analytics, search support, e-discovery, web crawler, open-source, taxonomy, metadata, search vendor evaluation, ottawa, gatineau, ontario, quebec, canada");
+        metadata.addString("title", "Norconex | Enterprise Search Experts");
 
         // Add new doc to Idol
         committer.queueAdd(id, file, metadata);
         committer.commit();
 
-        // Check that it's in Idol
-        System.out.println(committer.getIdolDbName());
-        //assertEquals(1, results.getNumFound());
-
     }
 
-	private File createFile(String content) throws IOException {
+    private File createFile(String content) throws IOException {
         File file = tempFolder.newFile();
         FileWriter writer = new FileWriter(file);
         writer.write(content);
@@ -131,7 +130,7 @@ public class IdolCommitterTest {
         return file;
     }
 
-    // @Test
+    @Test
     public void testCommitDelete() throws Exception {
         String content = "hello world!";
         File file = createFile(content);

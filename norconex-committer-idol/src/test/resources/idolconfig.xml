@@ -1,76 +1,76 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2010-2013 Norconex Inc. This file is part of Norconex HTTP 
-	Collector. Norconex HTTP Collector is free software: you can redistribute 
-	it and/or modify it under the terms of the GNU General Public License as 
-	published by the Free Software Foundation, either version 3 of the License, 
-	or (at your option) any later version. Norconex HTTP Collector is distributed 
-	in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-	the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-	See the GNU General Public License for more details. You should have received 
-	a copy of the GNU General Public License along with Norconex HTTP Collector. 
-	If not, see <http://www.gnu.org/licenses/>. -->
-<!-- This configuration shows the minimum required and minimum recommended 
-	to run a crawler. -->
+<!-- 
+Copyright 2010-2013 Norconex Inc.
 
+This file is part of Norconex HTTP Collector.
+
+Norconex HTTP Collector is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Norconex HTTP Collector is distributed in the hope that it will be useful, 
+	 but WITHOUT ANY WARRANTY; without even the implied warranty of 
+	 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 GNU General Public License for more details.
+
+	 You should have received a copy of the GNU General Public License
+	 along with Norconex HTTP Collector. If not, see <http://www.gnu.org/licenses/>.
+	 -->
+	 <!-- This configuration shows the minimum required and minimum recommended to 
+	 run a crawler.  
+	 -->
 <httpcollector id="Minimal Config HTTP Collector">
+  #set($basepkg = "com.norconex.collector.http")
+  #set($extension =
+  "${basepkg}.filter.impl.ExtensionURLFilter")
+  #set($urlRegex =
+  "${basepkg}.filter.impl.RegexURLFilter")
 
-	<!-- Location where internal progress files are stored. -->
-	<progressDir>c:\temp\stephen\workdir\progress</progressDir>
-
-	<!-- Location where logs are stored. -->
-	<logsDir>c:\temp\stephen\workdir\logs</logsDir>
-
-	<crawlers>
-		<crawler id="Minimal Config Wikipedia 1-page Crawl">
-
-			<workDir>c:</workDir>
-
-			<!-- === Minimum required: =========================================== -->
-
-			<!-- Requires at least one start URL. -->
-			<startURLs>
-				<url>http://laws-lois.justice.gc.ca/eng/acts/</url>
-			</startURLs>
-
-			<!-- === Minimum recommended: ======================================== -->
-
-			<!-- Put a maximum depth to avoid infinite crawling (e.g. calendars). -->
-			<maxDepth>1</maxDepth>
-
-			<!-- Be as nice as you can to sites you crawl. -->
-			<delay default="5000" />
-
-			<!-- At a minimum make sure you stay on your domain. -->
-			<httpURLFilters>
-				<filter class="com.norconex.collector.http.filter.impl.RegexURLFilter"
-					caseSensitive="false" onMatch="include">
-					http://laws-lois\.justice\.gc\.ca/eng/ACTs/.*
-				</filter>
-				<filter class="com.norconex.collector.http.filter.impl.RegexURLFilter"
-					caseSensitive="false" onMatch="include">
-					http://laws-lois\.justice\.gc\.ca/eng/IndexStatutoryInstruments/.*
-				</filter>
-			</httpURLFilters>
-
-			<!-- Decide what to do with your files by specifying a committer. -->
-			<committer class="com.norconex.committer.idol.IdolCommitter">
-				<idolHost>192.168.0.202</idolHost>
-				<idolPort>9000</idolPort>
-				<idolIndexPort>9001</idolIndexPort>
-				<idolDbName>Test</idolDbName>
-				<dreAddDataParams>
-					<param name="priority">100</param>
-				</dreAddDataParams>
-				<dreDeleteRefParams>
-					<param name="priority">100</param>
-				</dreDeleteRefParams>
-				<referenceField keep="true">DREREFERENCE</referenceField>
-				<contentField keep="false">DRECONTENT</contentField>
-				<queueDir>queue</queueDir>
-				<batchSize>50</batchSize>
-				<idolBatchSize>15</idolBatchSize>
-			</committer>
-		</crawler>
-	</crawlers>
-
+  <crawlers>
+    <crawler id="Minimal Config norconex 1-page Crawl">
+	 <!-- === Minimum required: =========================================== -->
+	 <!-- Requires at least one start URL. -->
+      <startURLs>
+        <url>http://dev.norconex.com/~fourniem/</url>
+      </startURLs>
+	 <!-- === Minimum recommended: ======================================== -->
+	 <!-- Put a maximum depth to avoid infinite crawling (e.g. calendars). -->
+      <maxDepth>3</maxDepth>
+	 <!-- Be as nice as you can to sites you crawl. -->
+      <delay default="5000" />
+	 <!-- At a minimum make sure you stay on your domain. -->
+      <httpURLFilters>
+        <filter class="com.norconex.collector.http.filter.impl.RegexURLFilter"
+          onMatch="include">http://dev\.norconex\.com/~fourniem/.*</filter>
+      </httpURLFilters>
+      <importer>
+        <postParseHandlers>
+	 <!-- If your target repository does not support arbitrary fields,
+	 make sure you only keep the fields you need. -->
+          <tagger class="com.norconex.importer.tagger.impl.KeepOnlyTagger"
+            fields="title,keywords,description,document.reference" />
+        </postParseHandlers>
+      </importer>
+	 <!-- Decide what to do with your files by specifying a committer. -->
+      <committer class="com.norconex.committer.idol.IdolCommitter">
+        <idolHost>192.168.0.202</idolHost>
+        <idolPort>9000</idolPort>
+        <idolIndexPort>9001</idolIndexPort>
+        <idolDbName>test</idolDbName>
+        <dreAddDataParams>
+          <param name="priority">100</param>
+        </dreAddDataParams>
+        <dreDeleteRefParams>
+          <param name="priority">100</param>
+        </dreDeleteRefParams>
+        <referenceField keep="true">DREREFERENCE
+        </referenceField>
+        <contentField keep="false">DRECONTENT</contentField>
+        <queueDir>queue</queueDir>
+        <batchSize>500</batchSize>
+        <idolBatchSize>50</idolBatchSize>
+      </committer>
+    </crawler>
+  </crawlers>
 </httpcollector>

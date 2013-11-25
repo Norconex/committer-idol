@@ -204,13 +204,22 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         return deleteUrlParams;
     }
 
-    // TODO check if http:// is already in the string
     public String getIdolUrl() {
-	return "http://" + this.idolHost + ":" + this.idolIndexPort + "/";
+        String url = "";
+        // check if the host already has prefix http://
+        if (!this.idolHost.startsWith("http://")
+                || !this.idolHost.startsWith("https://")) {
+            url = url + "http://" + getIdolHost() + ":" + getIdolIndexPort()
+                    + "/";
+        } else {
+            url = url + getIdolHost() + ":" + getIdolIndexPort() + "/";
+        }
+
+        return url;
     }
 
     private String getDreReference(Properties prop) {
-        String dreReferenceValue = "99";
+        String dreReferenceValue = "";
         for (Entry<String, List<String>> entry : prop.entrySet()) {
             for (String value : entry.getValue()) {
                 LOG.debug("value: " + value);
