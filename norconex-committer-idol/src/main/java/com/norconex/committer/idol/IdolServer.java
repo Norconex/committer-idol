@@ -150,7 +150,7 @@ public class IdolServer {
             while((line = in.readLine())!=null){
                 if(line != null && line.trim().length()>0){
                     if(LOG.isDebugEnabled()){
-                        LOG.debug("Response line: "+line);
+                        LOG.debug("Response from server: "+line);
                         responseLines.add(line);
                     }
                 }
