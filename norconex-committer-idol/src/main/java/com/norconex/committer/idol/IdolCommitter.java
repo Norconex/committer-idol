@@ -19,12 +19,10 @@
 package com.norconex.committer.idol;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
@@ -32,14 +30,12 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.committer.BaseCommitter;
 import com.norconex.committer.CommitterException;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
 
 /**
  * Commits documents to Autonomy IDOL Server via a rest api.
@@ -218,20 +214,6 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         return url;
     }
 
-    private String getDreReference(Properties prop) {
-        String dreReferenceValue = "";
-        for (Entry<String, List<String>> entry : prop.entrySet()) {
-            for (String value : entry.getValue()) {
-                LOG.debug("value: " + value);
-                if (entry.getKey().equals("document.reference")) {
-                    dreReferenceValue = value;
-                }
-            }
-        }
-
-        return dreReferenceValue;
-    }
-
     /**
      * Builds an idol document. An example of an idol document would look like
      * this: <br>
@@ -247,47 +229,6 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
      * @param properties
      * @return idolDocument
      */
-    private String buildIdolDocument(InputStream is, Properties properties) {
-        String idolDocument = "";
-        try {
-            // Create a database key for the idol idx document
-            idolDocument = idolDocument.concat("\n#DREREFERENCE ")
-                    + this.getDreReference(properties);
-
-            // Loop thru the list of properties and create idx fields
-            // accordingly.
-            for (Entry<String, List<String>> entry : properties.entrySet()) {
-                for (String value : entry.getValue()) {
-                    LOG.debug("value: " + value);
-                    idolDocument = idolDocument.concat("\n#DREFIELD "
-                            + entry.getKey() + "=\"" + value + "\"");
-                }
-            }
-            idolDocument = idolDocument.concat("\n#DREDBNAME "
-                    + this.getIdolDbName());
-
-            idolDocument = idolDocument.concat("\n#DRECONTENT\n"
-                    + IOUtils.toString(is));
-
-            idolDocument = idolDocument.concat("\n#DREENDDOC ");
-            idolDocument = idolDocument.concat("\n#DREENDDATAREFERENCE");
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            IOUtils.closeQuietly(is);
-        }
-
-        return idolDocument;
-    }
-
-    private void addToIdol(InputStream is, Properties properties)
-            throws IOException {
-        String idolDocument = buildIdolDocument(is, properties);
-        IdolServer idolServer = new IdolServer();
-        idolServer.add(this.getIdolUrl(), idolDocument);
-        idolServer.sync(this.getIdolUrl());
-
-    }
 
     private void delFromIdol(String reference, String dreDbName) {
         IdolServer idolServer = new IdolServer();
@@ -338,17 +279,9 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     private void persistToIdol() {
         LOG.info("Sending " + docsToAdd.size()
                 + " documents to Idol for update.");
-        // making sure the list is thread safe
-        synchronized (QueueAddLock) {
-            for (QueuedAddedDocument qad : docsToAdd) {
-                try {
-                    this.addToIdol(qad.getContentStream(), qad.getMetadata());
-                    LOG.debug(qad.getMetadata());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        IdolServer is = new IdolServer();
+        is.add(this.getIdolUrl() ,docsToAdd);
+        is.sync(this.getIdolUrl());
 
         // Delete queued documents after commit
         for (QueuedAddedDocument doc : docsToAdd) {

@@ -32,7 +32,7 @@ Norconex HTTP Collector is distributed in the hope that it will be useful,
 	 <!-- === Minimum required: =========================================== -->
 	 <!-- Requires at least one start URL. -->
       <startURLs>
-        <url>http://dev.norconex.com/~fourniem/</url>
+        <url>http://www.norconex.com/blog/</url>
       </startURLs>
 	 <!-- === Minimum recommended: ======================================== -->
 	 <!-- Put a maximum depth to avoid infinite crawling (e.g. calendars). -->
@@ -42,7 +42,7 @@ Norconex HTTP Collector is distributed in the hope that it will be useful,
 	 <!-- At a minimum make sure you stay on your domain. -->
       <httpURLFilters>
         <filter class="com.norconex.collector.http.filter.impl.RegexURLFilter"
-          onMatch="include">http://dev\.norconex\.com/~fourniem/.*</filter>
+          onMatch="include">http://www.norconex.com/.*</filter>
       </httpURLFilters>
       <importer>
         <postParseHandlers>
@@ -57,7 +57,7 @@ Norconex HTTP Collector is distributed in the hope that it will be useful,
         <idolHost>192.168.0.202</idolHost>
         <idolPort>9000</idolPort>
         <idolIndexPort>9001</idolIndexPort>
-        <idolDbName>test</idolDbName>
+        <idolDbName>norconexdb</idolDbName>
         <dreAddDataParams>
           <param name="priority">100</param>
         </dreAddDataParams>

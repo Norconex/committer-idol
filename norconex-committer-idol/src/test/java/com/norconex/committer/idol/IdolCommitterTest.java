@@ -103,21 +103,70 @@ public class IdolCommitterTest {
 
     @Test
     public void testCommitAdd() throws Exception {
-        String content = "hello world!";
+        String content = "Content1";
         File file = createFile(content);
         String id = "1";
         Properties metadata = new Properties();
         metadata.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id);
         metadata.addString(
                 "description",
-                "Norconex is an enterprise search technology services provider that helps businesses better organize ");
+                "Description 1");
         metadata.addString(
                 "keywords",
-                "enterprise search, solr, autonomy, attivio, google, microsoft fast, search analytics, search support, e-discovery, web crawler, open-source, taxonomy, metadata, search vendor evaluation, ottawa, gatineau, ontario, quebec, canada");
-        metadata.addString("title", "Norconex | Enterprise Search Experts");
+                "keywords 1");
+        metadata.addString("title", "Title 1");
 
         // Add new doc to Idol
         committer.queueAdd(id, file, metadata);
+
+        String content2 = "Content2";
+        File file2 = createFile(content2);
+        String id2 = "2";
+        Properties metadata2 = new Properties();
+        metadata2.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id2);
+        metadata2.addString(
+                "description",
+                "description2 ");
+        metadata2.addString(
+                "keywords",
+                "keyword2");
+        metadata2.addString("title", "Title 2");
+
+        // Add new doc to Idol
+        committer.queueAdd(id2, file2, metadata2);
+
+        String content3 = "Content3";
+        File file3 = createFile(content3);
+        String id3 = "3";
+        Properties metadata3 = new Properties();
+        metadata3.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id3);
+        metadata3.addString(
+                "description",
+                "description3 ");
+        metadata3.addString(
+                "keywords",
+                "keyword3");
+        metadata3.addString("title", "Title 3");
+
+        // Add new doc to Idol
+        committer.queueAdd(id3, file3, metadata3);
+
+        String content4 = "Content4";
+        File file4 = createFile(content4);
+        String id4 = "4";
+        Properties metadata4 = new Properties();
+        metadata4.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id4);
+        metadata4.addString(
+                "description",
+                "description4 ");
+        metadata4.addString(
+                "keywords",
+                "keyword4");
+        metadata4.addString("title", "Title 4");
+
+        // Add new doc to Idol
+        committer.queueAdd(id4, file4, metadata4);
+
         committer.commit();
 
     }
