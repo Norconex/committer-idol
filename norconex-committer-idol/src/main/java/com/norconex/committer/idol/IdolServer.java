@@ -40,10 +40,10 @@ public class IdolServer {
 //        post(con, url, idolDocument);
 //    }
 
-    public void add(String url, List<QueuedAddedDocument> docsToAdd) {
+    public void add(String url, List<QueuedAddedDocument> docsToAdd,String databaseName) {
         url = url.concat("DREADDDATA?");
         LOG.debug("In method add and we have "+ docsToAdd.size() + " documents to process");
-        String idolDocumentsBatched = buildIdolDocumentsBatch(docsToAdd);
+        String idolDocumentsBatched = buildIdolDocumentsBatch(docsToAdd,databaseName);
         HttpURLConnection con = getConnection(url);
         post(con, url, idolDocumentsBatched);
         LOG.debug("Idol Document Batched " + idolDocumentsBatched);
@@ -140,27 +140,25 @@ public class IdolServer {
         }
     }
 
-
-
-    //TODO remove hard coded database name
-    private String buildIdolDocumentsBatch(List<QueuedAddedDocument> docsToAdd) {
+    private String buildIdolDocumentsBatch(List<QueuedAddedDocument> docsToAdd,String databaseName) {
         LOG.debug("In method builIdolDocumentsBatch and we have " + docsToAdd.size() + " documents to process");
         StringBuilder  idolDocumentBatched = new StringBuilder();
         for (QueuedAddedDocument qad : docsToAdd) {
             try {
-                idolDocumentBatched.append(buildIdolDocument(qad.getContentStream(), qad.getMetadata(),"norconexdb"));
+                idolDocumentBatched.append(buildIdolDocument(qad.getContentStream(), qad.getMetadata(),databaseName));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        //TODO the closing argument should be configured by parameter
         idolDocumentBatched.append("\n#DREENDDATANOOP\n\n");
         LOG.debug("This is what the batch looks like " + idolDocumentBatched);
         return idolDocumentBatched.toString();
     }
     /**
-     *
+     *This method gets the value that will be used as key in the Idol Database.
      * @param prop
-     * @return
+     * @return String containing the text that will be used as key in the Idol Database
      */
     private String getDreReference(Properties prop) {
         LOG.debug("In method getDreReference");
@@ -177,6 +175,13 @@ public class IdolServer {
         return dreReferenceValue;
     }
 
+    /**
+     * Build an idol document using the idx file format
+     * @param is
+     * @param properties
+     * @param dbName
+     * @return a string containing a document in the idx format
+     */
     private String buildIdolDocument(InputStream is,
             Properties properties, String dbName) {
         StringBuilder sb = new StringBuilder();

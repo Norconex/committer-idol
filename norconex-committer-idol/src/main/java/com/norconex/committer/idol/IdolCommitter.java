@@ -280,7 +280,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         LOG.info("Sending " + docsToAdd.size()
                 + " documents to Idol for update.");
         IdolServer is = new IdolServer();
-        is.add(this.getIdolUrl() ,docsToAdd);
+        is.add(this.getIdolUrl() ,docsToAdd,this.idolDbName);
         is.sync(this.getIdolUrl());
 
         // Delete queued documents after commit

@@ -183,7 +183,7 @@ public class IdolCommitterTest {
     public void testCommitDelete() throws Exception {
         String content = "hello world!";
         File file = createFile(content);
-        String id = "1";
+        String id = "2";
         Properties metadata = new Properties();
         metadata.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id);
         metadata.addString(
