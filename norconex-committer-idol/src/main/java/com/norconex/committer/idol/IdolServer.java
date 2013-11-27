@@ -51,11 +51,6 @@ public class IdolServer {
      * @param url
      * @param idolDocument
      */
-//    public void add(String url, String idolDocument) {
-//        url = url.concat("DREADDDATA?");
-//        HttpURLConnection con = getConnection(url);
-//        post(con, url, idolDocument);
-//    }
 
     public void add(String url, List<QueuedAddedDocument> docsToAdd,String databaseName) {
         url = url.concat("DREADDDATA?");

@@ -274,7 +274,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
             throws IOException {
         String idolDocument = buildIdolDocument(is, properties);
         IdolServer idolServer = new IdolServer();
-        idolServer.add(this.getIdolUrl(), idolDocument);
+        idolServer.add(this.getIdolUrl(), docsToAdd,this.getIdolDbName());
         idolServer.sync(this.getIdolUrl());
 
     }
@@ -345,7 +345,7 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
             doc.deleteFromQueue();
         }
         docsToAdd.clear();
- 
+
         LOG.info("Done sending documents to Idol for update.");
     }
 
