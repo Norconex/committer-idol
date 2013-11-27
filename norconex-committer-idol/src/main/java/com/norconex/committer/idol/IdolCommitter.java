@@ -1,6 +1,6 @@
 /* Copyright 2010-2013 Norconex Inc.
  *
- * This file is part of Norconex Idol Committer.
+ * This file is part of Norconex Committer IDOL.
  *
  * Norconex Idol Committer is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as published by
@@ -13,16 +13,18 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Norconex Idol Committer. If not, see
+ * along with Norconex Committer IDOL. If not, see
  * <http://www.gnu.org/licenses/>.
  */
 package com.norconex.committer.idol;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
@@ -30,12 +32,15 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.committer.BaseCommitter;
 import com.norconex.committer.CommitterException;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.map.Properties;
 
 /**
  * Commits documents to Autonomy IDOL Server via a rest api.
@@ -76,9 +81,8 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
  *   &lt;/committer&gt;
  * </pre>
  *
- * @author <a href="mailto:stephen.jacob@norconex.com">Stephen Jacob</a>
+ * @author Stephen Jacob
  */
-@SuppressWarnings("restriction")
 public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 
     private static final long serialVersionUID = 1;
@@ -90,48 +94,52 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 
     /**
      * DREREFERENCE is the default key field in Autonomy Idol database.
-     *
      */
-    private static final String DEFAULT_IDOL_REF_FIELD = "DREREFERENCE";
+    public static final String DEFAULT_IDOL_REF_FIELD = "DREREFERENCE";
     /**
      * DRECONTENT is the default field for content in Autonomy Idol Database.
      */
-    private static final String DEFAULT_IDOL_CONTENT_FIELD = "DRECONTENT";
+    public static final String DEFAULT_IDOL_CONTENT_FIELD = "DRECONTENT";
 
-    private static final int DEFAULT_IDOL_BATCH_SIZE = 100;
-    private static final int DEFAULT_IDOL_PORT = 9000;
-    private static final int DEFAULT_IDOL_INDEX_PORT = 9001;
+    public static final int DEFAULT_IDOL_BATCH_SIZE = 100;
+    public static final int DEFAULT_IDOL_PORT = 9000;
+    public static final int DEFAULT_IDOL_INDEX_PORT = 9001;
+
+    private final List<QueuedAddedDocument> docsToAdd =
+            new ArrayList<QueuedAddedDocument>();
+    private final List<QueuedDeletedDocument> docsToRemove =
+            new ArrayList<QueuedDeletedDocument>();
+    private final Map<String, String> updateUrlParams =
+            new HashMap<String, String>();
+    private final Map<String, String> deleteUrlParams =
+            new HashMap<String, String>();
+
     private int idolBatchSize = DEFAULT_IDOL_BATCH_SIZE;
     private String idolDbName;
     private String idolHost;
-    private int idolPort;
-    private int idolIndexPort;
+    private int idolPort = DEFAULT_IDOL_PORT;
+    private int idolIndexPort = DEFAULT_IDOL_INDEX_PORT;
     Object QueueAddLock = new Object();
     Object QueueDeleteLock = new Object();
+
+
+    public IdolCommitter() {
+        super();
+    }
+    public IdolCommitter(int batchSize) {
+        super(batchSize);
+    }
 
     int getIdolIndexPort() {
         return idolIndexPort;
     }
-
     public void setIdolIndexPort(int idolIndexPort) {
         this.idolIndexPort = idolIndexPort;
     }
 
-    /**
-     *
-     */
-    private final List<QueuedAddedDocument> docsToAdd = new ArrayList<QueuedAddedDocument>();
-
-    private final List<QueuedDeletedDocument> docsToRemove = new ArrayList<QueuedDeletedDocument>();
-
-    private final Map<String, String> updateUrlParams = new HashMap<String, String>();
-
-    private final Map<String, String> deleteUrlParams = new HashMap<String, String>();
-
     public int getIdolBatchSize() {
         return idolBatchSize;
     }
-
     public void setIdolBatchSize(int idolBatchSize) {
         this.idolBatchSize = idolBatchSize;
     }
@@ -139,7 +147,6 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     public String getIdolDbName() {
         return idolDbName;
     }
-
     public void setIdolDbName(String idolDbName) {
         this.idolDbName = idolDbName;
     }
@@ -147,7 +154,6 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     public String getIdolHost() {
         return idolHost;
     }
-
     public void setIdolHost(String idolHost) {
         this.idolHost = idolHost;
     }
@@ -155,7 +161,6 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     public int getIdolPort() {
         return idolPort;
     }
-
     public void setIdolPort(int idolPort) {
         this.idolPort = idolPort;
     }
@@ -163,55 +168,60 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     public List<QueuedAddedDocument> getDocsToAdd() {
         return docsToAdd;
     }
-
     public List<QueuedDeletedDocument> getDocsToRemove() {
         return docsToRemove;
-    }
-
-    public void setUpdateUrlParam(String name, String value) {
-        updateUrlParams.put(name, value);
-    }
-
-    public void setDeleteUrlParam(String name, String value) {
-        deleteUrlParams.put(name, value);
     }
 
     public String getUpdateUrlParam(String name) {
         return updateUrlParams.get(name);
     }
+    public void setUpdateUrlParam(String name, String value) {
+        updateUrlParams.put(name, value);
+    }
 
     public String getDeleteUrlParam(String name) {
         return deleteUrlParams.get(name);
+    }
+    public void setDeleteUrlParam(String name, String value) {
+        deleteUrlParams.put(name, value);
     }
 
     public Set<String> getUpdateUrlParamNames() {
         return updateUrlParams.keySet();
     }
-
     public Set<String> getDeleteUrlParamNames() {
         return deleteUrlParams.keySet();
     }
-
     public Map<String, String> getUpdateUrlParams() {
         return updateUrlParams;
     }
-
     public Map<String, String> getDeleteUrlParams() {
         return deleteUrlParams;
     }
 
     public String getIdolUrl() {
-        String url = "";
+        StringBuilder url = new StringBuilder();
         // check if the host already has prefix http://
-        if (!this.idolHost.startsWith("http://")
-                || !this.idolHost.startsWith("https://")) {
-            url = url + "http://" + getIdolHost() + ":" + getIdolIndexPort()
-                    + "/";
-        } else {
-            url = url + getIdolHost() + ":" + getIdolIndexPort() + "/";
+        if (!StringUtils.startsWithAny(idolHost, "http", "https")) {
+            url.append("http://");
         }
+        url.append(getIdolHost() + ":" + getIdolIndexPort() + "/");
+        return url.toString();
+    }
 
-        return url;
+    private String getDreReference(Properties prop) {
+        String dreReferenceValue = "";
+        for (Entry<String, List<String>> entry : prop.entrySet()) {
+            for (String value : entry.getValue()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("value: " + value);
+                }
+                if (entry.getKey().equals("document.reference")) {
+                    dreReferenceValue = value;
+                }
+            }
+        }
+        return dreReferenceValue;
     }
 
     /**
@@ -229,6 +239,45 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
      * @param properties
      * @return idolDocument
      */
+    private String buildIdolDocument(InputStream is, Properties properties) {
+        StringBuilder doc = new StringBuilder();
+        try {
+            // Create a database key for the idol idx document
+            doc.append("\n#DREREFERENCE ");
+            doc.append(this.getDreReference(properties));
+
+            // Loop thru the list of properties and create idx fields
+            // accordingly.
+            for (Entry<String, List<String>> entry : properties.entrySet()) {
+                for (String value : entry.getValue()) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("value: " + value);
+                    }
+                    doc.append("\n#DREFIELD ");
+                    doc.append(entry.getKey());
+                    doc.append("=\"").append(value).append("\"");
+                }
+            }
+            doc.append("\n#DREDBNAME ").append(this.getIdolDbName());
+            doc.append("\n#DRECONTENT\n").append(IOUtils.toString(is));
+            doc.append("\n#DREENDDOC ");
+            doc.append("\n#DREENDDATAREFERENCE");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(is);
+        }
+        return doc.toString();
+    }
+
+    private void addToIdol(InputStream is, Properties properties)
+            throws IOException {
+        String idolDocument = buildIdolDocument(is, properties);
+        IdolServer idolServer = new IdolServer();
+        idolServer.add(this.getIdolUrl(), idolDocument);
+        idolServer.sync(this.getIdolUrl());
+
+    }
 
     private void delFromIdol(String reference, String dreDbName) {
         IdolServer idolServer = new IdolServer();
@@ -279,16 +328,24 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
     private void persistToIdol() {
         LOG.info("Sending " + docsToAdd.size()
                 + " documents to Idol for update.");
-        IdolServer is = new IdolServer();
-        is.add(this.getIdolUrl() ,docsToAdd,this.idolDbName);
-        is.sync(this.getIdolUrl());
+        // making sure the list is thread safe
+        synchronized (QueueAddLock) {
+            for (QueuedAddedDocument qad : docsToAdd) {
+                try {
+                    this.addToIdol(qad.getContentStream(), qad.getMetadata());
+                    LOG.debug(qad.getMetadata());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
         // Delete queued documents after commit
         for (QueuedAddedDocument doc : docsToAdd) {
             doc.deleteFromQueue();
         }
         docsToAdd.clear();
-
+ 
         LOG.info("Done sending documents to Idol for update.");
     }
 

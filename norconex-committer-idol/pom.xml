@@ -1,19 +1,38 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<!--
+Copyright 2010-2013 Norconex Inc.
+
+This file is part of Norconex Committer IDOL.
+
+Norconex Committer Solr is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Norconex Committer Solr is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Norconex Committer IDOL. If not, see <http://www.gnu.org/licenses/>.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.collectors</groupId>
   <artifactId>norconex-committer-idol</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Norconex Committer Autonomy</name>
-  
+  <name>Norconex Committer IDOL</name>
+
   <!-- PROPERTIES -->
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <site.baseurl />
-    <currentStableVersion>coming soon</currentStableVersion>
+    <currentStableVersion>1.0.0</currentStableVersion>
   </properties>
   <inceptionYear>2013</inceptionYear>
-  
+
   <!-- LICENSE INFORMATION -->
   <licenses>
     <license>
@@ -23,7 +42,7 @@
     <license>
       <comments>
         Norconex provides commercial licenses for all its open-source
-        products, designed to meet the development and distribution 
+        products, designed to meet the development and distribution
         needs of commercial distributors
         (such as OEMs, ISVs and VARs).  Please contact Norconex
         for a commercial license at sales@norconex.com.
@@ -31,7 +50,7 @@
       <name>Commercial License</name>
     </license>
   </licenses>
-  
+
   <!-- REPOSITORIES -->
   <repositories>
     <repository>
@@ -89,12 +108,12 @@
     <dependency>
       <groupId>com.norconex.commons</groupId>
       <artifactId>norconex-commons-lang</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.1.0</version>
     </dependency>
     <dependency>
       <groupId>com.norconex.collectors</groupId>
       <artifactId>norconex-committer</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -113,19 +132,144 @@
     </dependency>
   </dependencies>
 
-  <description>Autonomy implementation of Norconex Committer. This library will help you commit documents to an Autonomy Idol Server.</description>
+  <description>HP (Autonomy) IDOL implementation of Norconex Committer. This library will help you commit documents to an Autonomy IDOL Server.</description>
   <organization>
     <name>Norconex Inc.</name>
     <url>http://www.norconex.com</url>
   </organization>
   <scm>
     <url>https://github.com/Norconex/committer-idol</url>
+    <connection>scm:git:git@github.com:Norconex/committer-idol.git</connection>
+    <developerConnection>scm:git:git@github.com:Norconex/committer-idol.git</developerConnection>
   </scm>
   <issueManagement>
     <system>GitHub</system>
     <url>https://github.com/Norconex/committer-idol/issues</url>
   </issueManagement>
 
+  <build>
+    <resources>
+        <resource>
+            <directory>${project.build.testSourceDirectory}</directory>
+            <includes>
+                <include>**/*.html</include>
+            </includes>
+        </resource>
+    </resources>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh</artifactId>
+        <version>1.0</version>
+      </extension>
+      <extension>
+        <groupId>org.springframework.build.aws</groupId>
+        <artifactId>org.springframework.build.aws.maven</artifactId>
+        <version>3.0.0.RELEASE</version>
+      </extension>
+    </extensions>
+    <pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+                <dependencies>
+                  <dependency>
+                    <groupId>org.apache.maven.doxia</groupId>
+                    <artifactId>doxia-site-renderer</artifactId>
+                    <version>1.4</version>
+                  </dependency>
+                  <dependency>
+                    <groupId>org.apache.maven.doxia</groupId>
+                    <artifactId>doxia-module-markdown</artifactId>
+                    <version>1.4</version>
+                  </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/dist.xml</descriptor>
+          </descriptors>
+          <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9</version>
+        <configuration>
+          <stylesheetfile>${basedir}/src/main/resources/javadoc.css</stylesheetfile>
+          <overview>${basedir}/src/main/resources/javadoc-overview.html</overview>
+          <show>protected</show>
+          <detectLinks>true</detectLinks>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-javadoc</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>javadoc</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-jar-plugin</artifactId>
+       <version>2.2</version>
+       <executions>
+         <execution>
+           <goals>
+             <goal>test-jar</goal>
+           </goals>
+         </execution>
+       </executions>
+     </plugin>
+    </plugins>
+  </build>
 
   <distributionManagement>
     <site>
@@ -200,74 +344,17 @@
           </reportSet>
         </reportSets>
       </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.15</version>
-      </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-        <configuration>
-          <formats>
-            <format>html</format>
-            <format>xml</format>
-          </formats>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <version>2.5.2</version>
-        <configuration>
-          <threshold>High</threshold>
-          <effort>Default</effort>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.10</version>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-pmd-plugin</artifactId>
-        <version>3.0.1</version>
-      </plugin>
-
+<!--
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <links>
             <link>http://commons.apache.org/lang/api</link>
-            <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
           </links>
         </configuration>
       </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <webAccessUrl>https://github.com/Norconex/committer-idol</webAccessUrl>
-          <anonymousConnection>scm:git:https://github.com/Norconex/committer-idol</anonymousConnection>
-          <developerConnection>scm:git:https://github.com/Norconex/committer-idol</developerConnection>
-          <cutomtomBundle>mailing-list:Mailing List</cutomtomBundle>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>dashboard-maven-plugin</artifactId>
-      </plugin>
-
+ -->
     </plugins>
   </reporting>
   <developers>
@@ -293,5 +380,18 @@
       </roles>
       <timezone>-4</timezone>
     </developer>
+    <developer>
+        <id>essiembp</id>
+        <name>Pascal Essiembre</name>
+        <email>pascal.essiembre@norconex.com</email>
+        <organization>Norconex Inc.</organization>
+        <organizationUrl>http://www.norconex.com</organizationUrl>
+        <roles>
+          <role>project leader</role>
+          <role>developer</role>
+        </roles>
+        <timezone>-4</timezone>
+    </developer>
   </developers>
+  <url>http://norconex.com/product/committer-idol/</url>
 </project>
