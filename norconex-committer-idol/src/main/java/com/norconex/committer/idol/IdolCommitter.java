@@ -32,7 +32,6 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -224,55 +223,9 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         return dreReferenceValue;
     }
 
-    /**
-     * Builds an idol document. An example of an idol document would look like
-     * this: <br>
-     * #DREREFERENCE 1 <br>
-     * #DRETITLE Title Goes Here <br>
-     * #DRECONTENT<br>
-     * Content Goes Here <br>
-     * #DREDBNAME test <br>
-     * #DREENDDOC <br>
-     * #DREENDDATAREFERENCE
-     *
-     * @param is
-     * @param properties
-     * @return idolDocument
-     */
-    private String buildIdolDocument(InputStream is, Properties properties) {
-        StringBuilder doc = new StringBuilder();
-        try {
-            // Create a database key for the idol idx document
-            doc.append("\n#DREREFERENCE ");
-            doc.append(this.getDreReference(properties));
-
-            // Loop thru the list of properties and create idx fields
-            // accordingly.
-            for (Entry<String, List<String>> entry : properties.entrySet()) {
-                for (String value : entry.getValue()) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("value: " + value);
-                    }
-                    doc.append("\n#DREFIELD ");
-                    doc.append(entry.getKey());
-                    doc.append("=\"").append(value).append("\"");
-                }
-            }
-            doc.append("\n#DREDBNAME ").append(this.getIdolDbName());
-            doc.append("\n#DRECONTENT\n").append(IOUtils.toString(is));
-            doc.append("\n#DREENDDOC ");
-            doc.append("\n#DREENDDATAREFERENCE");
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            IOUtils.closeQuietly(is);
-        }
-        return doc.toString();
-    }
 
     private void addToIdol(InputStream is, Properties properties)
             throws IOException {
-        String idolDocument = buildIdolDocument(is, properties);
         IdolServer idolServer = new IdolServer();
         idolServer.add(this.getIdolUrl(), docsToAdd,this.getIdolDbName());
         idolServer.sync(this.getIdolUrl());
