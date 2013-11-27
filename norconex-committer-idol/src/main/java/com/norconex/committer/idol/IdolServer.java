@@ -144,7 +144,7 @@ public class IdolServer {
             LOG.trace("Server Response Code : " + responseCode);
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     con.getInputStream(), "UTF-8"));
-            List responseLines = new ArrayList();
+            List<String> responseLines = new ArrayList<String>();
             String line = null;
 
             while((line = in.readLine())!=null){
