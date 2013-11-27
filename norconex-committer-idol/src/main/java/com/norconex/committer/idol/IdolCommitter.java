@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
@@ -208,22 +207,6 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         return url.toString();
     }
 
-    private String getDreReference(Properties prop) {
-        String dreReferenceValue = "";
-        for (Entry<String, List<String>> entry : prop.entrySet()) {
-            for (String value : entry.getValue()) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("value: " + value);
-                }
-                if (entry.getKey().equals("document.reference")) {
-                    dreReferenceValue = value;
-                }
-            }
-        }
-        return dreReferenceValue;
-    }
-
-
     private void addToIdol(InputStream is, Properties properties)
             throws IOException {
         IdolServer idolServer = new IdolServer();
@@ -246,7 +229,6 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         setIdolBatchSize(xml.getInt("idolBatchSize", DEFAULT_IDOL_BATCH_SIZE));
         setBatchSize(xml.getInt("batchSize"));
         setIdolDbName(xml.getString("idolDbName"));
-        LOG.debug("------" + xml.getString("idolDbName"));
         List<HierarchicalConfiguration> uparams = xml
                 .configurationsAt("dreAddDataParams.param");
         for (HierarchicalConfiguration param : uparams) {

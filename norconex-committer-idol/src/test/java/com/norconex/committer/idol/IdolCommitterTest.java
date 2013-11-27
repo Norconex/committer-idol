@@ -92,7 +92,6 @@ public class IdolCommitterTest {
         // Idol committer
         assertTrue(committer.getIdolBatchSize() == 50);
         assertTrue(committer.getIdolHost().equalsIgnoreCase("192.168.0.202"));
-        System.out.println("IdolPort" + committer.getIdolPort());
         assertTrue(committer.getIdolPort() == 9000);
         assertTrue(committer.getIdolIndexPort() == 9001);
         assertTrue(committer.getUpdateUrlParam("priority").equalsIgnoreCase(

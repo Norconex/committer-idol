@@ -26,10 +26,12 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -54,11 +56,11 @@ public class IdolServer {
 
     public void add(String url, List<QueuedAddedDocument> docsToAdd,String databaseName) {
         url = url.concat("DREADDDATA?");
-        LOG.debug("In method add and we have "+ docsToAdd.size() + " documents to process");
+        LOG.trace("In method add and we have "+ docsToAdd.size() + " documents to process");
         String idolDocumentsBatched = buildIdolDocumentsBatch(docsToAdd,databaseName);
         HttpURLConnection con = getConnection(url);
         post(con, url, idolDocumentsBatched);
-        LOG.debug("Idol Document Batched " + idolDocumentsBatched);
+        LOG.trace("Idol Document Batched " + idolDocumentsBatched);
     }
 
     /**
@@ -98,11 +100,13 @@ public class IdolServer {
         try {
             obj = new URL(url);
             con = (HttpURLConnection) obj.openConnection();
+            con.setDoInput(true);
+            con.setDoOutput(true);
+            con.setUseCaches(false);
+            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             // add request header
             con.setRequestMethod("POST");
-            con.setRequestProperty("User-Agent", "");
-            con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
             // Send post request
             con.setDoOutput(true);
@@ -122,31 +126,42 @@ public class IdolServer {
      *
      * @param con
      * @param url
-     * @param parameters
+     * @param content
      */
     private void post(HttpURLConnection con, String url,
-            String parameters) {
+            String content) {
 
         try {
             DataOutputStream wr;
-            //LOG.debug("Parameter = " + parameters);
             wr = new DataOutputStream(con.getOutputStream());
-            wr.writeBytes(parameters);
+            wr.writeBytes(content);
             wr.flush();
-            wr.close();
+
+            //Get the response
             int responseCode = con.getResponseCode();
-            LOG.debug("\nSending 'POST' request to URL : " + url);
-            LOG.debug("Post parameters : " + parameters);
-            LOG.debug("Server Response Code : " + responseCode);
+            LOG.trace("\nSending 'POST' request to URL : " + url);
+            LOG.trace("Post parameters : " + content);
+            LOG.trace("Server Response Code : " + responseCode);
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     con.getInputStream(), "UTF-8"));
-            String inputLine = null;
-            StringBuffer response = new StringBuffer();
+            List responseLines = new ArrayList();
+            String line = null;
 
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
+            while((line = in.readLine())!=null){
+                if(line != null && line.trim().length()>0){
+                    if(LOG.isDebugEnabled()){
+                        LOG.debug("Response line: "+line);
+                        responseLines.add(line);
+                    }
+                }
             }
+
             in.close();
+            wr.close();
+            String response = StringUtils.join(responseLines.iterator()," ");
+            if(!StringUtils.contains(response, "INDEXID")){
+                throw new RuntimeException("Unexpected HTTP response: " + response);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -164,7 +179,6 @@ public class IdolServer {
         }
         //TODO the closing argument should be configured by parameter
         idolDocumentBatched.append("\n#DREENDDATANOOP\n\n");
-        LOG.debug("This is what the batch looks like " + idolDocumentBatched);
         return idolDocumentBatched.toString();
     }
     /**
@@ -173,17 +187,17 @@ public class IdolServer {
      * @return String containing the text that will be used as key in the Idol Database
      */
     private String getDreReference(Properties prop) {
-        LOG.debug("In method getDreReference");
+        LOG.trace("In method getDreReference");
         String dreReferenceValue = "";
         for (Entry<String, List<String>> entry : prop.entrySet()) {
             for (String value : entry.getValue()) {
-                LOG.debug("value: " + value);
+                LOG.trace("value: " + value);
                 if (entry.getKey().equals("document.reference")) {
                     dreReferenceValue = value;
                 }
             }
         }
-        LOG.debug("dreReference " + dreReferenceValue);
+        LOG.trace("dreReference " + dreReferenceValue);
         return dreReferenceValue;
     }
 
