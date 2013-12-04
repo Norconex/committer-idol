@@ -390,29 +390,6 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         writer.writeCharacters(Integer.toString(getIdolBatchSize()));
         writer.writeEndElement();
 
-/*
-        writer.writeStartElement("solrUpdateURLParams");
-        for (String name : updateUrlParams.keySet()) {
-            writer.writeStartElement("param");
-            writer.writeAttribute("name", name);
-            writer.writeCharacters(updateUrlParams.get(name));
-            writer.writeEndElement();
-        }
-        writer.writeEndElement();
-
-        writer.writeStartElement("solrDeleteURLParams");
-        for (String name : deleteUrlParams.keySet()) {
-            writer.writeStartElement("param");
-            writer.writeAttribute("name", name);
-            writer.writeCharacters(deleteUrlParams.get(name));
-            writer.writeEndElement();
-        }
-        writer.writeEndElement();
-
-        writer.writeStartElement("solrBatchSize");
-        writer.writeCharacters(ObjectUtils.toString(getSolrBatchSize()));
-        writer.writeEndElement();
-*/
     }
 
 }
