@@ -22,13 +22,18 @@ package com.norconex.committer.idol;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.io.output.XmlStreamWriter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -94,10 +99,16 @@ public class IdolCommitterTest {
         assertTrue(committer.getIdolHost().equalsIgnoreCase("192.168.0.202"));
         assertTrue(committer.getIdolPort() == 9000);
         assertTrue(committer.getIdolIndexPort() == 9001);
-        assertTrue(committer.getUpdateUrlParam("priority").equalsIgnoreCase(
-                "100"));
-        assertTrue(committer.getDeleteUrlParam("priority").equalsIgnoreCase(
-                "100"));
+    }
+
+    @Test
+    public void testXmlSave() throws XMLStreamException, IOException {
+
+        OutputStream out = new FileOutputStream(
+                "src/test/resources/saveIdolconfig.xml");
+        XmlStreamWriter writer = new XmlStreamWriter(out, "UTF-8");
+        committer.saveToXML(writer);
+        assertTrue(true);
     }
 
     @Test
@@ -107,12 +118,8 @@ public class IdolCommitterTest {
         String id = "1";
         Properties metadata = new Properties();
         metadata.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id);
-        metadata.addString(
-                "description",
-                "Description 1");
-        metadata.addString(
-                "keywords",
-                "keywords 1");
+        metadata.addString("description", "Description 1");
+        metadata.addString("keywords", "keywords 1");
         metadata.addString("title", "Title 1");
 
         // Add new doc to Idol
@@ -123,12 +130,8 @@ public class IdolCommitterTest {
         String id2 = "2";
         Properties metadata2 = new Properties();
         metadata2.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id2);
-        metadata2.addString(
-                "description",
-                "description2 ");
-        metadata2.addString(
-                "keywords",
-                "keyword2");
+        metadata2.addString("description", "description2 ");
+        metadata2.addString("keywords", "keyword2");
         metadata2.addString("title", "Title 2");
 
         // Add new doc to Idol
@@ -139,12 +142,8 @@ public class IdolCommitterTest {
         String id3 = "3";
         Properties metadata3 = new Properties();
         metadata3.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id3);
-        metadata3.addString(
-                "description",
-                "description3 ");
-        metadata3.addString(
-                "keywords",
-                "keyword3");
+        metadata3.addString("description", "description3 ");
+        metadata3.addString("keywords", "keyword3");
         metadata3.addString("title", "Title 3");
 
         // Add new doc to Idol
@@ -155,12 +154,8 @@ public class IdolCommitterTest {
         String id4 = "4";
         Properties metadata4 = new Properties();
         metadata4.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id4);
-        metadata4.addString(
-                "description",
-                "description4 ");
-        metadata4.addString(
-                "keywords",
-                "keyword4");
+        metadata4.addString("description", "description4 ");
+        metadata4.addString("keywords", "keyword4");
         metadata4.addString("title", "Title 4");
 
         // Add new doc to Idol

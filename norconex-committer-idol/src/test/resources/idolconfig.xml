@@ -58,17 +58,11 @@ Norconex HTTP Collector is distributed in the hope that it will be useful,
         <idolPort>9000</idolPort>
         <idolIndexPort>9001</idolIndexPort>
         <idolDbName>norconexdb</idolDbName>
-        <dreAddDataParams>
-          <param name="priority">100</param>
-        </dreAddDataParams>
-        <dreDeleteRefParams>
-          <param name="priority">100</param>
-        </dreDeleteRefParams>
         <referenceField keep="true">DREREFERENCE
         </referenceField>
-        <contentField keep="false">DRECONTENT</contentField>
-        <queueDir>queue</queueDir>
-        <batchSize>500</batchSize>
+        <contentField keep="true">DRECONTENT</contentField>
+        <queueDir>/tmp</queueDir>
+        <batchSize>1000</batchSize>
         <idolBatchSize>50</idolBatchSize>
       </committer>
     </crawler>

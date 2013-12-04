@@ -107,6 +107,10 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
             new ArrayList<QueuedAddedDocument>();
     private final List<QueuedDeletedDocument> docsToRemove =
             new ArrayList<QueuedDeletedDocument>();
+    private final Map<String, String> referenceFieldParams = new HashMap<String, String>();
+    private final Map<String, String> contentFieldParams = new HashMap<String, String>();
+
+
     private final Map<String, String> updateUrlParams =
             new HashMap<String, String>();
     private final Map<String, String> deleteUrlParams =
@@ -184,6 +188,22 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         deleteUrlParams.put(name, value);
     }
 
+    public Map<String, String> getReferenceFieldParams() {
+        return referenceFieldParams;
+    }
+
+    public void setReferenceFieldParams(String key, String value) {
+        referenceFieldParams.put(key, value);
+    }
+
+    public Map<String, String> getContentFieldParams() {
+        return contentFieldParams;
+    }
+
+    public void setContentFieldParams(String key, String value){
+        contentFieldParams.put(key, value);
+    }
+
     public Set<String> getUpdateUrlParamNames() {
         return updateUrlParams.keySet();
     }
@@ -229,6 +249,17 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
         setIdolBatchSize(xml.getInt("idolBatchSize", DEFAULT_IDOL_BATCH_SIZE));
         setBatchSize(xml.getInt("batchSize"));
         setIdolDbName(xml.getString("idolDbName"));
+
+        List<HierarchicalConfiguration> referenceField = xml.configurationsAt("referenceField");
+        for(HierarchicalConfiguration param : referenceField){
+            setReferenceFieldParams("keep",param.getString("[@keep]"));
+        }
+
+        List<HierarchicalConfiguration> contentField = xml.configurationsAt("contentField");
+        for(HierarchicalConfiguration param : contentField){
+            setContentFieldParams("keep",param.getString("[@keep]"));
+        }
+
         List<HierarchicalConfiguration> uparams = xml
                 .configurationsAt("dreAddDataParams.param");
         for (HierarchicalConfiguration param : uparams) {
@@ -321,7 +352,67 @@ public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
 
     @Override
     protected void saveToXML(XMLStreamWriter writer) throws XMLStreamException {
+        writer.writeStartElement("idolHost");
+        writer.writeCharacters(getIdolHost());
+        writer.writeEndElement();
+        writer.writeStartElement("idolPort");
+        writer.writeCharacters(Integer.toString(getIdolPort()));
+        writer.writeEndElement();
+        writer.writeStartElement("idolIndexPort");
+        writer.writeCharacters(Integer.toString(getIdolIndexPort()));
+        writer.writeEndElement();
+        writer.writeStartElement("idolDbName");
+        writer.writeCharacters(getIdolDbName());
+        writer.writeEndElement();
+        writer.writeStartElement("idolDbName");
+        writer.writeCharacters(getIdolDbName());
+        writer.writeEndElement();
 
+
+        writer.writeStartElement("referenceField");
+        for (Map.Entry<String, String> entry: referenceFieldParams.entrySet()) {
+            LOG.debug("-----> " + entry.getKey() + " " + entry.getValue());
+            writer.writeAttribute(entry.getKey(), entry.getValue());
+        }
+        writer.writeCharacters("DREREFERENCE");
+        writer.writeEndElement();
+
+        writer.writeStartElement("contentField");
+        for(Map.Entry<String, String>entry:contentFieldParams.entrySet()){
+            LOG.debug("-----> " + entry.getKey() + " " + entry.getValue());
+            writer.writeAttribute(entry.getKey(), entry.getValue());
+        }
+
+        writer.writeCharacters("DRECONTENT");
+        writer.writeEndElement();
+
+        writer.writeStartElement("idolBatchSize");
+        writer.writeCharacters(Integer.toString(getIdolBatchSize()));
+        writer.writeEndElement();
+
+/*
+        writer.writeStartElement("solrUpdateURLParams");
+        for (String name : updateUrlParams.keySet()) {
+            writer.writeStartElement("param");
+            writer.writeAttribute("name", name);
+            writer.writeCharacters(updateUrlParams.get(name));
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+
+        writer.writeStartElement("solrDeleteURLParams");
+        for (String name : deleteUrlParams.keySet()) {
+            writer.writeStartElement("param");
+            writer.writeAttribute("name", name);
+            writer.writeCharacters(deleteUrlParams.get(name));
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+
+        writer.writeStartElement("solrBatchSize");
+        writer.writeCharacters(ObjectUtils.toString(getSolrBatchSize()));
+        writer.writeEndElement();
+*/
     }
 
 }
