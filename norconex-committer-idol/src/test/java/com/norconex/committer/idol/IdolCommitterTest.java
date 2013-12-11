@@ -41,8 +41,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.norconex.committer.ICommitter;
+import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.map.Properties;
 
+/**
+ * @author Martin Fournier
+ */
+@SuppressWarnings("javadoc")
 public class IdolCommitterTest {
 
     @Rule
@@ -57,10 +62,6 @@ public class IdolCommitterTest {
 
         // Create an instance of the Idol committer
         committer = new IdolCommitter();
-
-        // TODO: Setup the Idol Factory
-        /*
-    	*/
 
         File configFile = new File("src/test/resources/idolconfig.xml");
         XMLConfiguration xml = null;
@@ -95,10 +96,10 @@ public class IdolCommitterTest {
     public void testXmlLoad() {
         // Verify that the values from the xml file have been loaded into the
         // Idol committer
-        assertTrue(committer.getIdolBatchSize() == 50);
-        assertTrue(committer.getIdolHost().equalsIgnoreCase("192.168.0.202"));
-        assertTrue(committer.getIdolPort() == 9000);
-        assertTrue(committer.getIdolIndexPort() == 9001);
+        assertTrue(committer.getCommitBatchSize() == 50);
+        assertTrue(committer.getHost().equalsIgnoreCase("192.168.0.202"));
+        assertTrue(committer.getAciPort() == 9000);
+        assertTrue(committer.getIndexPort() == 9001);
     }
 
     @Test
@@ -111,7 +112,32 @@ public class IdolCommitterTest {
         assertTrue(true);
     }
 
+    
     @Test
+    public void testWriteRead() throws IOException {
+        IdolCommitter outCommitter = new IdolCommitter();
+        outCommitter.setQueueDir("C:\\FakeTestDirectory\\");
+        outCommitter.setContentSourceField("contentSourceField");
+        outCommitter.setContentTargetField("contentTargetField");
+        outCommitter.setIdSourceField("idTargetField");
+        outCommitter.setIdTargetField("idTargetField");
+        outCommitter.setKeepContentSourceField(true);
+        outCommitter.setKeepIdSourceField(false);
+        outCommitter.setQueueSize(100);
+        outCommitter.setCommitBatchSize(50);
+        outCommitter.setHost("fake.idol.host.com");
+        outCommitter.setAciPort(9100);
+        outCommitter.setIndexPort(9001);
+        outCommitter.setDatabaseName("Fake Database");
+        outCommitter.addDreAddDataParam("aparam1", "avalue1");
+        outCommitter.addDreAddDataParam("aparam2", "avalue2");
+        outCommitter.addDreDeleteRefParam("dparam1", "dvalue1");
+        outCommitter.addDreDeleteRefParam("dparam2", "dvalue2");
+        System.out.println("Writing/Reading this: " + outCommitter);
+        ConfigurationUtil.assertWriteRead(outCommitter);
+    }
+    
+    //@Test  <-- Cannot run without IDOL running
     public void testCommitAdd() throws Exception {
         String content = "Content1";
         File file = createFile(content);

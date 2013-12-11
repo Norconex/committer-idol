@@ -18,12 +18,18 @@
  */
 package com.norconex.committer.idol;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
@@ -31,14 +37,20 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.committer.BaseCommitter;
+import com.norconex.committer.AbstractMappedCommitter;
 import com.norconex.committer.CommitterException;
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.committer.IAddOperation;
+import com.norconex.committer.ICommitOperation;
+import com.norconex.committer.IDeleteOperation;
+import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.url.QueryString;
 
 /**
  * Commits documents to Autonomy IDOL Server via a rest api.
@@ -48,348 +60,479 @@ import com.norconex.commons.lang.map.Properties;
  *
  * <pre>
  *   &lt;committer class="com.norconex.committer.idol.IdolCommitter"&gt;
- *      &lt;idolHost&gt;(Host to IDOL.)&lt;/idolHost&gt;
- *      &lt;idolPort&gt;(Port to IDOL.)&lt;/idolPort&gt;
- *      &lt;idolIndexPort&gt;(Port to IDOL Index.)&lt;/idolIndexPort&gt;
- *      &lt;idolDbName&gt;(IDOL Databse Name where to store documents.)&lt;/idolDbName&gt;
+ *      &lt;host&gt;(Host to IDOL.)&lt;/host&gt;
+ *      &lt;aciPort&gt;(Port to IDOL.)&lt;/aciPort&gt;
+ *      &lt;indexPort&gt;(Port to IDOL Index.)&lt;/indexPort&gt;
+ *      &lt;databaseName&gt;(IDOL Databse Name where to store documents.)&lt;/databaseName&gt;
  *      &lt;dreAddDataParams&gt;
  *         &lt;param name="(parameter name)"&gt;(parameter value)&lt;/param&gt;
  *      &lt;/dreAddDataParams&gt;
  *      &lt;dreDeleteRefParams&gt;
  *         &lt;param name="(parameter name)"&gt;(parameter value)&lt;/param&gt;
  *      &lt;/dreDeleteRefParams&gt;
- *      &lt;referenceField keep="[false|true]"&gt;
- *         (Name of source field that will be mapped to the IDOL "DREREFERENCE" field.
- *         Default is the document reference metadata field:
- *         "document.reference". The metadata source field is
- *         deleted, unless "keep" is set to true.)
- *      &lt;/referenceField&gt;
- *      &lt;contentField keep="[false|true]"&gt;
- *         (If you wish to use a metadata field to act as the document
- *         "DRECONTENT" you can specify that field here. Default does not take a
- *         metadata field but rather the document content. Once re-mapped , the
- *         metadata source field is deleted, unless "keep" is set to  true.)
- *      &lt;/contentField&gt;
+ *      &lt;idSourceField keep="[false|true]"&gt;
+ *         (Name of source field that will be mapped to the Solr "id" field
+ *         or whatever "idTargetField" specified.
+ *         Default is the document reference metadata field: 
+ *         "document.reference".  Once re-mapped, the metadata source field is 
+ *         deleted, unless "keep" is set to <code>true</code>.)
+ *      &lt;/idSourceField&gt;
+ *      &lt;idTargetField&gt;
+ *         (Name of IDOL target field where the store a document unique 
+ *         identifier (idSourceField).  If not specified, default 
+ *         is "DREREFERENCE".) 
+ *      &lt;/idTargetField&gt;
+ *      &lt;contentSourceField keep="[false|true]&gt;
+ *         (If you wish to use a metadata field to act as the document 
+ *         "content", you can specify that field here.  Default 
+ *         does not take a metadata field but rather the document content.
+ *         Once re-mapped, the metadata source field is deleted,
+ *         unless "keep" is set to <code>true</code>.)
+ *      &lt;/contentSourceField&gt;
+ *      &lt;contentTargetField&gt;
+ *         (IDOL target field name for a document content/body.
+ *          Default is: DRECONTENT)
+ *      &lt;/contentTargetField&gt;
  *      &lt;queueDir&gt;(optional path where to queue files)&lt;/queueDir&gt;
- *      &lt;batchSize&gt;(queue size before sending to IDOL)&lt;/batchSize&gt;
- *      &lt;idolBatchSize&gt;
- *         (max number of docs to send IDOL at once. If not specified,
- *         the default is 100 [greater than one].)
- *      &lt;/idolBatchSize&gt;
+ *      &lt;queueSize&gt;(max queue size before committing)&lt;/queueSize&gt;
+ *      &lt;commitBatchSize&gt;
+ *          (max number of docs to send IDOL at once)
+ *      &lt;/commitBatchSize&gt;
  *   &lt;/committer&gt;
  * </pre>
  *
  * @author Stephen Jacob
+ * @author Martin Fournier
+ * @author Pascal Essiembre
  */
-public class IdolCommitter extends BaseCommitter implements IXMLConfigurable {
+public class IdolCommitter extends AbstractMappedCommitter {
 
-    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = -5716008670360409137L;
 
-    /**
-     * Logging object to be uses to output debug/info/warning information.
-     */
     private static final Logger LOG = LogManager.getLogger(IdolCommitter.class);
 
-    /**
-     * DREREFERENCE is the default key field in Autonomy Idol database.
-     */
-    public static final String DEFAULT_IDOL_REF_FIELD = "DREREFERENCE";
-    /**
-     * DRECONTENT is the default field for content in Autonomy Idol Database.
-     */
+    /** Default key field in Autonomy Idol database. */
+    public static final String DEFAULT_IDOL_REFERENCE_FIELD = "DREREFERENCE";
+    /** Default field for content in Autonomy Idol Database.*/
     public static final String DEFAULT_IDOL_CONTENT_FIELD = "DRECONTENT";
+    /** Default IDOL ACI port. */
+    public static final int DEFAULT_ACI_PORT = 9000;
+    /** Default IDOL ACI port. */
+    public static final int DEFAULT_INDEX_PORT = 9001;
 
-    public static final int DEFAULT_IDOL_BATCH_SIZE = 100;
-    public static final int DEFAULT_IDOL_PORT = 9000;
-    public static final int DEFAULT_IDOL_INDEX_PORT = 9001;
-
-    private final List<QueuedAddedDocument> docsToAdd =
-            new ArrayList<QueuedAddedDocument>();
-    private final List<QueuedDeletedDocument> docsToRemove =
-            new ArrayList<QueuedDeletedDocument>();
-    private final Map<String, String> referenceFieldParams = new HashMap<String, String>();
-    private final Map<String, String> contentFieldParams = new HashMap<String, String>();
-
-
-    private final Map<String, String> updateUrlParams =
+    private final Map<String, String> dreAddDataParams =
             new HashMap<String, String>();
-    private final Map<String, String> deleteUrlParams =
+    private final Map<String, String> dreDeleteRefParams =
             new HashMap<String, String>();
 
-    private int idolBatchSize = DEFAULT_IDOL_BATCH_SIZE;
-    private String idolDbName;
-    private String idolHost;
-    private int idolPort = DEFAULT_IDOL_PORT;
-    private int idolIndexPort = DEFAULT_IDOL_INDEX_PORT;
-    Object QueueAddLock = new Object();
-    Object QueueDeleteLock = new Object();
+    private String databaseName;
+    private String host;
+    private int aciPort = DEFAULT_ACI_PORT;
+    private int indexPort = DEFAULT_INDEX_PORT;
 
 
+    /**
+     * Constructor.
+     */
     public IdolCommitter() {
         super();
-    }
-    public IdolCommitter(int batchSize) {
-        super(batchSize);
-    }
-
-    int getIdolIndexPort() {
-        return idolIndexPort;
-    }
-    public void setIdolIndexPort(int idolIndexPort) {
-        this.idolIndexPort = idolIndexPort;
+        setContentTargetField(DEFAULT_IDOL_CONTENT_FIELD);
+        setIdTargetField(DEFAULT_IDOL_REFERENCE_FIELD);
     }
 
-    public int getIdolBatchSize() {
-        return idolBatchSize;
+    /**
+     * Gets IDOL ACI port.
+     * @return IDOL ACI port
+     */
+    public int getAciPort() {
+        return aciPort;
     }
-    public void setIdolBatchSize(int idolBatchSize) {
-        this.idolBatchSize = idolBatchSize;
-    }
-
-    public String getIdolDbName() {
-        return idolDbName;
-    }
-    public void setIdolDbName(String idolDbName) {
-        this.idolDbName = idolDbName;
-    }
-
-    public String getIdolHost() {
-        return idolHost;
-    }
-    public void setIdolHost(String idolHost) {
-        this.idolHost = idolHost;
+    /**
+     * Sets IDOL ACI port.
+     * @param aciPort IDOL ACI port
+     */
+    public void setAciPort(int aciPort) {
+        this.aciPort = aciPort;
     }
 
-    public int getIdolPort() {
-        return idolPort;
+    /**
+     * Gets IDOL index port.
+     * @return IDOL index port
+     */
+    public int getIndexPort() {
+        return indexPort;
     }
-    public void setIdolPort(int idolPort) {
-        this.idolPort = idolPort;
-    }
-
-    public List<QueuedAddedDocument> getDocsToAdd() {
-        return docsToAdd;
-    }
-    public List<QueuedDeletedDocument> getDocsToRemove() {
-        return docsToRemove;
-    }
-
-    public String getUpdateUrlParam(String name) {
-        return updateUrlParams.get(name);
-    }
-    public void setUpdateUrlParam(String name, String value) {
-        updateUrlParams.put(name, value);
+    /**
+     * Sets IDOL index port.
+     * @param indexPort IDOL index port
+     */
+    public void setIndexPort(int indexPort) {
+        this.indexPort = indexPort;
     }
 
-    public String getDeleteUrlParam(String name) {
-        return deleteUrlParams.get(name);
+    /**
+     * Gets IDOL database name.
+     * @return IDOL database name
+     */
+    public String getDatabaseName() {
+        return databaseName;
     }
-    public void setDeleteUrlParam(String name, String value) {
-        deleteUrlParams.put(name, value);
-    }
-
-    public Map<String, String> getReferenceFieldParams() {
-        return referenceFieldParams;
-    }
-
-    public void setReferenceFieldParams(String key, String value) {
-        referenceFieldParams.put(key, value);
-    }
-
-    public Map<String, String> getContentFieldParams() {
-        return contentFieldParams;
+    /**
+     * Sets IDOL database name.
+     * @param databaseName IDOL database name
+     */
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
-    public void setContentFieldParams(String key, String value){
-        contentFieldParams.put(key, value);
+    /**
+     * Sets IDOL host name.
+     * @return IDOL host name
+     */
+    public String getHost() {
+        return host;
+    }
+    /**
+     * Gets IDOL host name.
+     * @param host IDOL host name
+     */
+    public void setHost(String host) {
+        this.host = host;
     }
 
-    public Set<String> getUpdateUrlParamNames() {
-        return updateUrlParams.keySet();
+    /**
+     * Gets the DREADDDATA URL parameter value for the parameter name.
+     * @param name parameter name
+     * @return parameter value
+     */
+    public String getDreAddDataParam(String name) {
+        return dreAddDataParams.get(name);
     }
-    public Set<String> getDeleteUrlParamNames() {
-        return deleteUrlParams.keySet();
+    /**
+     * Adds a DREADDDATA URL parameter.
+     * @param name parameter name
+     * @param value parameter value
+     */
+    public void addDreAddDataParam(String name, String value) {
+        dreAddDataParams.put(name, value);
     }
-    public Map<String, String> getUpdateUrlParams() {
-        return updateUrlParams;
+    /**
+     * Gets the DREDELETEREF URL parameter value for the parameter name.
+     * @param name parameter name
+     * @return parameter value
+     */
+    public String getDreDeleteRefParam(String name) {
+        return dreDeleteRefParams.get(name);
     }
-    public Map<String, String> getDeleteUrlParams() {
-        return deleteUrlParams;
+    /**
+     * Adds the DREDELETEREF URL parameter value for the parameter name.
+     * @param name parameter name
+     * @param value parameter value
+     */
+    public void addDreDeleteRefParam(String name, String value) {
+        dreDeleteRefParams.put(name, value);
+    }
+    /**
+     * Gets all DREADDDATA URL parameter names
+     * @return parameter names
+     */
+    public Set<String> getDreAddDataParamNames() {
+        return dreAddDataParams.keySet();
+    }
+    /**
+     * Gets all DREDELETEREF URL parameter names
+     * @return parameter names
+     */
+    public Set<String> getDreDeleteRefParamNames() {
+        return dreDeleteRefParams.keySet();
     }
 
-    public String getIdolUrl() {
-        StringBuilder url = new StringBuilder();
-        // check if the host already has prefix http://
-        if (!StringUtils.startsWithAny(idolHost, "http", "https")) {
-            url.append("http://");
+
+    @Override
+    protected void commitBatch(List<ICommitOperation> batch) {
+        LOG.info("Sending " + batch.size() 
+                + " documents to IDOL for addition/deletion.");
+        List<IAddOperation> additions = new ArrayList<IAddOperation>();
+        List<IDeleteOperation> deletions = new ArrayList<IDeleteOperation>();
+        for (ICommitOperation op : batch) {
+            if (op instanceof IAddOperation) {
+                additions.add((IAddOperation) op); 
+            } else if (op instanceof IDeleteOperation) {
+                deletions.add((IDeleteOperation) op); 
+            } else {
+                throw new CommitterException("Unsupported operation:" + op);
+            }
         }
-        url.append(getIdolHost() + ":" + getIdolIndexPort() + "/");
-        return url.toString();
-    }
-
-    private void addToIdol(InputStream is, Properties properties)
-            throws IOException {
-        IdolServer idolServer = new IdolServer();
-        idolServer.add(this.getIdolUrl(), docsToAdd,this.getIdolDbName());
-        idolServer.sync(this.getIdolUrl());
-
-    }
-
-    private void delFromIdol(String reference, String dreDbName) {
-        IdolServer idolServer = new IdolServer();
-        idolServer.delete(this.getIdolUrl(), reference, dreDbName);
-        idolServer.sync(this.getIdolUrl());
+        dreDeleteRef(deletions);
+        dreAddData(additions);
+        LOG.info("Done sending documents to IDOL for addition/deletion.");    
+        
     }
 
     @Override
     protected void loadFromXml(XMLConfiguration xml) {
-        setIdolHost(xml.getString("idolHost"));
-        setIdolPort(xml.getInt("idolPort", DEFAULT_IDOL_PORT));
-        setIdolIndexPort(xml.getInt("idolIndexPort", DEFAULT_IDOL_INDEX_PORT));
-        setIdolBatchSize(xml.getInt("idolBatchSize", DEFAULT_IDOL_BATCH_SIZE));
-        setBatchSize(xml.getInt("batchSize"));
-        setIdolDbName(xml.getString("idolDbName"));
-
-        List<HierarchicalConfiguration> referenceField = xml.configurationsAt("referenceField");
-        for(HierarchicalConfiguration param : referenceField){
-            setReferenceFieldParams("keep",param.getString("[@keep]"));
-        }
-
-        List<HierarchicalConfiguration> contentField = xml.configurationsAt("contentField");
-        for(HierarchicalConfiguration param : contentField){
-            setContentFieldParams("keep",param.getString("[@keep]"));
-        }
+        setHost(xml.getString("host"));
+        setAciPort(xml.getInt("aciPort", DEFAULT_ACI_PORT));
+        setIndexPort(xml.getInt("indexPort", DEFAULT_INDEX_PORT));
+        setDatabaseName(xml.getString("databaseName"));
 
         List<HierarchicalConfiguration> uparams = xml
                 .configurationsAt("dreAddDataParams.param");
         for (HierarchicalConfiguration param : uparams) {
-            setUpdateUrlParam(param.getString("[@name]"), param.getString(""));
+            addDreAddDataParam(param.getString("[@name]"), param.getString(""));
         }
 
         List<HierarchicalConfiguration> dparams = xml
                 .configurationsAt("dreDeleteRefParams.param");
         for (HierarchicalConfiguration param : dparams) {
-            setDeleteUrlParam(param.getString("[@name]"), param.getString(""));
-        }
-    }
-
-    @Override
-    protected void commitAddedDocument(QueuedAddedDocument document)
-            throws IOException {
-        docsToAdd.add(document);
-        if (docsToAdd.size() % idolBatchSize == 0) {
-            persistToIdol();
-        }
-    }
-
-    @Override
-    protected void commitDeletedDocument(QueuedDeletedDocument document)
-            throws IOException {
-        docsToRemove.add(document);
-        if (docsToRemove.size() % idolBatchSize == 0) {
-            deleteFromIdol();
-        }
-    }
-
-    private void persistToIdol() {
-        LOG.info("Sending " + docsToAdd.size()
-                + " documents to Idol for update.");
-        // making sure the list is thread safe
-        synchronized (QueueAddLock) {
-            for (QueuedAddedDocument qad : docsToAdd) {
-                try {
-                    this.addToIdol(qad.getContentStream(), qad.getMetadata());
-                    LOG.debug(qad.getMetadata());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        // Delete queued documents after commit
-        for (QueuedAddedDocument doc : docsToAdd) {
-            doc.deleteFromQueue();
-        }
-        docsToAdd.clear();
-
-        LOG.info("Done sending documents to Idol for update.");
-    }
-
-    private void deleteFromIdol() {
-        LOG.info("Sending " + docsToRemove.size()
-                + " documents to Idol for deletion.");
-        // Making sure the list is thread safe
-        synchronized (QueueDeleteLock) {
-            for (QueuedDeletedDocument doc : docsToRemove) {
-                try {
-                    this.delFromIdol(doc.getReference(), idolDbName);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            try {
-                for (QueuedDeletedDocument doc : docsToRemove) {
-                    doc.deleteFromQueue();
-                }
-                docsToRemove.clear();
-            } catch (Exception e) {
-                throw new CommitterException(
-                        "Cannot delete document batch from Idol.", e);
-            }
-        }
-        LOG.info("Done sending documents to Idol for deletion.");
-    }
-
-    @Override
-    protected void commitComplete() {
-        if (!docsToAdd.isEmpty()) {
-            persistToIdol();
-        }
-        if (!docsToRemove.isEmpty()) {
-            deleteFromIdol();
+            addDreDeleteRefParam(
+                    param.getString("[@name]"), param.getString(""));
         }
     }
 
     @Override
     protected void saveToXML(XMLStreamWriter writer) throws XMLStreamException {
-        writer.writeStartElement("idolHost");
-        writer.writeCharacters(getIdolHost());
-        writer.writeEndElement();
-        writer.writeStartElement("idolPort");
-        writer.writeCharacters(Integer.toString(getIdolPort()));
-        writer.writeEndElement();
-        writer.writeStartElement("idolIndexPort");
-        writer.writeCharacters(Integer.toString(getIdolIndexPort()));
-        writer.writeEndElement();
-        writer.writeStartElement("idolDbName");
-        writer.writeCharacters(getIdolDbName());
-        writer.writeEndElement();
-        writer.writeStartElement("idolDbName");
-        writer.writeCharacters(getIdolDbName());
+        writer.writeStartElement("host");
+        writer.writeCharacters(getHost());
         writer.writeEndElement();
 
-
-        writer.writeStartElement("referenceField");
-        for (Map.Entry<String, String> entry: referenceFieldParams.entrySet()) {
-            LOG.debug("-----> " + entry.getKey() + " " + entry.getValue());
-            writer.writeAttribute(entry.getKey(), entry.getValue());
+        writer.writeStartElement("aciPort");
+        writer.writeCharacters(Integer.toString(getAciPort()));
+        writer.writeEndElement();
+        
+        writer.writeStartElement("indexPort");
+        writer.writeCharacters(Integer.toString(getIndexPort()));
+        writer.writeEndElement();
+        
+        writer.writeStartElement("databaseName");
+        writer.writeCharacters(getDatabaseName());
+        writer.writeEndElement();
+        
+        writer.writeStartElement("dreAddDataParams");
+        for (String key : dreAddDataParams.keySet()) {
+            writer.writeStartElement("param");
+            writer.writeAttribute(key, key);
+            writer.writeCharacters(dreAddDataParams.get(key));
+            writer.writeEndElement();
         }
-        writer.writeCharacters("DREREFERENCE");
         writer.writeEndElement();
 
-        writer.writeStartElement("contentField");
-        for(Map.Entry<String, String>entry:contentFieldParams.entrySet()){
-            LOG.debug("-----> " + entry.getKey() + " " + entry.getValue());
-            writer.writeAttribute(entry.getKey(), entry.getValue());
+        writer.writeStartElement("dreDeleteRefParams");
+        for (String key : dreDeleteRefParams.keySet()) {
+            writer.writeStartElement("param");
+            writer.writeAttribute(key, key);
+            writer.writeCharacters(dreDeleteRefParams.get(key));
+            writer.writeEndElement();
         }
-
-        writer.writeCharacters("DRECONTENT");
         writer.writeEndElement();
 
-        writer.writeStartElement("idolBatchSize");
-        writer.writeCharacters(Integer.toString(getIdolBatchSize()));
-        writer.writeEndElement();
 
     }
 
+    /**
+     * Build an idol document using the idx file format
+     * @param is
+     * @param properties
+     * @param dbName
+     * @return a string containing a document in the idx format
+     */
+    private String buildIdxDocument(InputStream is, Properties properties) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            // Create a database key for the idol idx document
+            sb.append(("\n#DREREFERENCE "));
+            sb.append(properties.getString(getIdTargetField()));
+
+            // Loop thru the list of properties and create idx fields
+            // accordingly.
+            for (Entry<String, List<String>> entry : properties.entrySet()) {
+                if (!EqualsUtil.equalsAny(entry.getKey(), 
+                        getIdTargetField(), getContentTargetField())) {
+                    for (String value : entry.getValue()) {
+                        sb.append("\n#DREFIELD ");
+                        sb.append(entry.getKey());
+                        sb.append("=\"");
+                        sb.append(value);
+                        sb.append("\"");
+                    }
+                }
+            }
+            sb.append("\n#DREDBNAME ");
+            sb.append(databaseName);
+            sb.append("\n#DRECONTENT\n");
+            sb.append(properties.getString(getContentTargetField()));
+            sb.append("\n#DREENDDOC ");
+            sb.append("\n");
+        } finally {
+            IOUtils.closeQuietly(is);
+        }
+        return sb.toString();
+    }
+
+    
+    /**
+     * Commits the addition operations.
+     * @param addOperations additions
+     */
+    public void dreAddData(List<IAddOperation> addOperations) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Sending " + addOperations.size() 
+                    + " documents to IDOL for addition.");
+        }
+        StringBuilder b = new StringBuilder();
+        b.append(createURL());
+        b.append("DREADDDATA?");
+        QueryString qs = new QueryString();
+        for (String key : dreAddDataParams.keySet()) {
+            qs.addString(key, dreAddDataParams.get(key));
+        }
+        String addURL = qs.applyOnURL(b.toString());
+        String idxBatch = buildIdxBatchContent(addOperations);
+        post(addURL, idxBatch);
+        LOG.debug("Done sending documents to IDOL for addition.");  
+    }
+
+    
+    /**
+     * Commits the deletion operations
+     * @param deleteOperations deletions
+     */
+    public void dreDeleteRef(List<IDeleteOperation> deleteOperations) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Sending " + deleteOperations.size() 
+                    + " documents references to IDOL for deletion.");
+        }
+        String deleteURL = createURL() + "DREDELETEREF?Docs=" 
+                + buildDeleteRefsContent(deleteOperations)
+                + "&DREDbName=" + getDatabaseName();
+        QueryString qs = new QueryString();
+        for (String key : dreDeleteRefParams.keySet()) {
+            qs.addString(key, dreDeleteRefParams.get(key));
+        }
+        String qstring = qs.toString();
+        if (StringUtils.isNotBlank(qstring) && qstring.startsWith("&")) {
+            deleteURL += "&" + qstring.substring(1);
+        }
+        post(deleteURL, StringUtils.EMPTY);
+        LOG.debug("Done sending references to IDOL for deletion.");   
+    }
+
+    /**
+     * Perform a DRESYNC / Commit on the idol Database.
+     */
+    public void sync() {
+        String syncURL = createURL() + "DRESYNC";
+        post(syncURL, StringUtils.EMPTY);
+    }
+
+    /**
+     * Creates a HTTP URL connection with the proper Post method and properties.
+     * @param url the URL to open
+     * @return HttpUrlConnection object
+     */
+    private HttpURLConnection createURLConnection(String url) {
+        URL obj;
+        HttpURLConnection con = null;
+        try {
+            obj = new URL(url);
+            con = (HttpURLConnection) obj.openConnection();
+            con.setDoInput(true);
+            con.setDoOutput(true);
+            con.setUseCaches(false);
+            con.setRequestProperty(
+                    "Content-Type", "application/x-www-form-urlencoded");
+            // add request header
+            con.setRequestMethod("POST");
+            // Send post request
+            con.setDoOutput(true);
+
+        } catch (MalformedURLException e) {
+            LOG.error("Something went wrong with the URL: " + url, e);
+        } catch (IOException e) {
+            LOG.error(
+                    "I got an I/O problem trying to connect to the server", e);
+        }
+        return con;
+    }
+
+    /**
+     * Add/Remove/Commit documents based on the parameters passed to the method.
+     * @param url URL to post
+     * @param the content to post
+     */
+    private void post(String url, String content) {
+        HttpURLConnection con = null;
+        DataOutputStream wr = null;
+        try {
+            con = createURLConnection(url);
+            wr = new DataOutputStream(con.getOutputStream());
+            wr.writeBytes(content);
+            wr.flush();
+
+            //Get the response
+            int responseCode = con.getResponseCode();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Sending 'POST' request to URL : " + url);
+                LOG.debug("Post parameters : " + content);
+                LOG.debug("Server Response Code : " + responseCode);
+            }
+            String response = IOUtils.toString(con.getInputStream());
+            if (!StringUtils.contains(response, "INDEXID")) {
+                throw new CommitterException(
+                        "Unexpected HTTP response: " + response);
+            }
+            wr.close();
+        } catch (IOException e) {
+            throw new CommitterException("Cannot post content to IDOL.", e);
+        } finally {
+            if (con != null) {
+                con.disconnect();
+            }
+            IOUtils.closeQuietly(wr);
+        }
+    }
+
+    private String buildDeleteRefsContent(
+            List<IDeleteOperation> deleteOperations) {
+        StringBuilder  dels = new StringBuilder();
+        String sep = StringUtils.EMPTY;
+        for (IDeleteOperation op : deleteOperations) {
+            try {
+                dels.append(sep);
+                dels.append(URLEncoder.encode(
+                        op.getReference(), CharEncoding.UTF_8));
+                sep = "+";
+            } catch (IOException e) {
+                LOG.error("Could not create deletion references: "
+                        + op.getReference(), e);
+            }
+        }
+        return dels.toString();
+    }
+    
+    private String buildIdxBatchContent(List<IAddOperation> addOperations) {
+        StringBuilder  idx = new StringBuilder();
+        for (IAddOperation op : addOperations) {
+            try {
+                idx.append(buildIdxDocument(
+                        op.getContentStream(), op.getMetadata()));
+            } catch (IOException e) {
+                LOG.error("Could not create IDX document: "
+                        + op.getMetadata(), e);
+            }
+        }
+        idx.append("\n#DREENDDATANOOP\n\n");
+        return idx.toString();
+    }
+    
+    private String createURL() {
+        StringBuilder url = new StringBuilder();
+        // check if the host already has prefix http://
+        if (!StringUtils.startsWithAny(host, "http", "https")) {
+            url.append("http://");
+        }
+        url.append(host).append(":").append(indexPort).append("/");
+        return url.toString();
+    }
+    
 }
