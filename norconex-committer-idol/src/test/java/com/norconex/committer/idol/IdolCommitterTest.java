@@ -19,100 +19,29 @@
 
 package com.norconex.committer.idol;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.io.output.XmlStreamWriter;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-import com.norconex.committer.ICommitter;
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.map.Properties;
 
 /**
- * @author Martin Fournier
+ * @author Pascal Essiembre
  */
 @SuppressWarnings("javadoc")
 public class IdolCommitterTest {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-
-    private IdolCommitter committer = null;
-
-    private File queue;
 
     @Before
     public void setup() throws Exception {
-
-        // Create an instance of the Idol committer
-        committer = new IdolCommitter();
-
-        File configFile = new File("src/test/resources/idolconfig.xml");
-        XMLConfiguration xml = null;
-        XMLConfiguration committerConfig = null;
-        try {
-            xml = new XMLConfiguration(configFile);
-            List<HierarchicalConfiguration> committerNode = xml
-                    .configurationsAt("crawlers.crawler.committer");
-            committerConfig = new XMLConfiguration(committerNode.get(0));
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
-        }
-
-        // Load the xml configuration for the Idol committer
-        committer.loadFromXml(committerConfig);
-
-        // Setup the queue
-        queue = tempFolder.newFolder("queue");
-        committer.setQueueDir(queue.toString());
-
-        // Create the databse to do the integration test
-        // System.out.println(committer.getIdolDbName());
-        // committer.create("test");
     }
 
     @After
     public void teardown() throws Exception {
-        // committer.delete("test");
     }
 
-    @Test
-    public void testXmlLoad() {
-        // Verify that the values from the xml file have been loaded into the
-        // Idol committer
-        assertTrue(committer.getCommitBatchSize() == 50);
-        assertTrue(committer.getHost().equalsIgnoreCase("192.168.0.202"));
-        assertTrue(committer.getAciPort() == 9000);
-        assertTrue(committer.getIndexPort() == 9001);
-    }
-
-    @Test
-    public void testXmlSave() throws XMLStreamException, IOException {
-
-        OutputStream out = new FileOutputStream(
-                "src/test/resources/saveIdolconfig.xml");
-        XmlStreamWriter writer = new XmlStreamWriter(out, "UTF-8");
-        committer.saveToXML(writer);
-        assertTrue(true);
-    }
-
-    
     @Test
     public void testWriteRead() throws IOException {
         IdolCommitter outCommitter = new IdolCommitter();
@@ -136,88 +65,4 @@ public class IdolCommitterTest {
         System.out.println("Writing/Reading this: " + outCommitter);
         ConfigurationUtil.assertWriteRead(outCommitter);
     }
-    
-    //@Test  <-- Cannot run without IDOL running
-    public void testCommitAdd() throws Exception {
-        String content = "Content1";
-        File file = createFile(content);
-        String id = "1";
-        Properties metadata = new Properties();
-        metadata.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id);
-        metadata.addString("description", "Description 1");
-        metadata.addString("keywords", "keywords 1");
-        metadata.addString("title", "Title 1");
-
-        // Add new doc to Idol
-        committer.queueAdd(id, file, metadata);
-
-        String content2 = "Content2";
-        File file2 = createFile(content2);
-        String id2 = "2";
-        Properties metadata2 = new Properties();
-        metadata2.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id2);
-        metadata2.addString("description", "description2 ");
-        metadata2.addString("keywords", "keyword2");
-        metadata2.addString("title", "Title 2");
-
-        // Add new doc to Idol
-        committer.queueAdd(id2, file2, metadata2);
-
-        String content3 = "Content3";
-        File file3 = createFile(content3);
-        String id3 = "3";
-        Properties metadata3 = new Properties();
-        metadata3.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id3);
-        metadata3.addString("description", "description3 ");
-        metadata3.addString("keywords", "keyword3");
-        metadata3.addString("title", "Title 3");
-
-        // Add new doc to Idol
-        committer.queueAdd(id3, file3, metadata3);
-
-        String content4 = "Content4";
-        File file4 = createFile(content4);
-        String id4 = "4";
-        Properties metadata4 = new Properties();
-        metadata4.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id4);
-        metadata4.addString("description", "description4 ");
-        metadata4.addString("keywords", "keyword4");
-        metadata4.addString("title", "Title 4");
-
-        // Add new doc to Idol
-        committer.queueAdd(id4, file4, metadata4);
-
-        committer.commit();
-
-    }
-
-    private File createFile(String content) throws IOException {
-        File file = tempFolder.newFile();
-        FileWriter writer = new FileWriter(file);
-        writer.write(content);
-        writer.close();
-        return file;
-    }
-
-    @Test
-    public void testCommitDelete() throws Exception {
-        String content = "hello world!";
-        File file = createFile(content);
-        String id = "2";
-        Properties metadata = new Properties();
-        metadata.addString(ICommitter.DEFAULT_DOCUMENT_REFERENCE, id);
-        metadata.addString(
-                "description",
-                "Norconex is an enterprise search technology services provider that helps businesses better organize ");
-        metadata.addString(
-                "keywords",
-                "enterprise search, solr, autonomy, attivio, google, microsoft fast, search analytics, search support, e-discovery, web crawler, open-source, taxonomy, metadata, search vendor evaluation, ottawa, gatineau, ontario, quebec, canada");
-        metadata.addString("title", "Norconex | Enterprise Search Experts");
-
-        // Remove doc from idol
-        committer.queueRemove(id, file, metadata);
-
-        committer.commit();
-    }
-
 }
