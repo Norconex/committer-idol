@@ -1,14 +1,14 @@
 General Information:
 ====================
 
-For any inquiries about Norconex Commons Lang, please contact Norconex Inc. at
+For any inquiries about Norconex IDOL Committer, please contact Norconex Inc. at
 info@norconex.com.
 
 This product website and documentation is located at:
-http://www.norconex.com/product/committer-solr/
+http://www.norconex.com/product/committer-idol/
 
 Source code can be obtained at:
-https://github.com/Norconex/collectors
+https://github.com/Norconex/committer-idol
 
 Norconex licenses:
 ==================

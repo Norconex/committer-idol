@@ -2,88 +2,135 @@
 <!-- 
 Copyright 2010-2013 Norconex Inc.
 
-This file is part of Norconex JEF.
+This file is part of Norconex Commiter IDOL.
 
-Norconex JEF is free software: you can redistribute it and/or modify
+Norconex Commiter IDOL is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Norconex JEF is distributed in the hope that it will be useful, 
+Norconex Commiter IDOL is distributed in the hope that it will be useful, 
 but WITHOUT ANY WARRANTY; without even the implied warranty of 
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Norconex JEF. If not, see <http://www.gnu.org/licenses/>.
+along with Norconex Commiter IDOL. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/DECORATION/1.3.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/DECORATION/1.3.0 http://maven.apache.org/xsd/decoration-1.3.0.xsd"
-  name="Norconex Solr Committer">
-  <bannerLeft>
-    <name>Norconex Solr Committer</name>
-    <src>images/leftbanner.png</src>
-    <href>http://www.norconex.com</href>
-  </bannerLeft>
-  <bannerRight>
-    <src>images/rightbanner.png</src>
-    <href>http://www.norconex.com/product/committer-solr</href>
-  </bannerRight>
+  name="Norconex IDOL Committer">
+
   <skin>
-    <groupId>org.apache.maven.skins</groupId>
-    <artifactId>maven-fluido-skin</artifactId>
-    <version>1.3.0</version>
+    <groupId>lt.velykis.maven.skins</groupId>
+    <artifactId>reflow-maven-skin</artifactId>
+    <version>1.0.0</version>
   </skin>
+  
   <custom>
-    <fluidoSkin>
-      <sideBarEnabled>true</sideBarEnabled>
-      <sourceLineNumbersEnabled>false</sourceLineNumbersEnabled>
-      <twitter>
-        <user>Norconex</user>
-        <showUser>false</showUser>
-        <showFollowers>false</showFollowers>
-      </twitter>
-      <facebookLike />
-      <googlePlusOne />
-    </fluidoSkin>
+    <reflowSkin>
+      <protocolRelativeURLs>false</protocolRelativeURLs>
+      <highlightJs>true</highlightJs>
+      <theme>site</theme>
+      <brand>
+        <name><![CDATA[
+          <span class="color-highlight">Norconex</span> IDOL Committer
+          ]]>
+        </name>
+        <href>http://www.norconex.com/product/committer-idol/index.html</href>
+      </brand>
+      <slogan><![CDATA[
+          Open-Source Committer for Autonomy IDOL
+          ]]>
+      </slogan>
+      <titleTemplate>%2$s | %1$s</titleTemplate>
+      <topNav>none</topNav>
+      <bottomNav>
+        <column>Main</column>
+        <column>Maven Documentation</column>
+        <column>Norconex Products</column>
+      </bottomNav>
+      <bottomDescription><![CDATA[
+          <a href="http://www.norconex.com"><img src="./images/norconex_logo.png"></a><br />
+          Norconex IDOL Committer is released and maintained by 
+          <a href="http://www.norconex.com">Norconex</a>. 
+          ]]>
+      </bottomDescription>
+      <skinAttribution>false</skinAttribution>
+
+      <breadcrumbs>false</breadcrumbs>
+      <markPageHeader>false</markPageHeader>
+      <toc>none</toc>
+      <smoothScroll>true</smoothScroll>
+
+      <pages>
+
+        <index project="norconex">
+          <breadcrumbs>false</breadcrumbs>
+          <sections>
+            <body />
+            <columns>3</columns>
+          </sections>
+        </index>
+
+        <download project="norconex">
+          <breadcrumbs>false</breadcrumbs>
+          <sections>
+            <body />
+          </sections>
+        </download>
+
+      </pages>
+    </reflowSkin>
   </custom>
   
+  <bannerLeft>
+    <name><![CDATA[
+      <span class="color-highlight">Norconex</span> IDOL Committer
+      ]]>
+    </name>
+    <href>http://www.norconex.com/product/committer-idol/index.html</href>
+  </bannerLeft>
+  <version position="none "/>
+  <publishDate position="navigation-bottom"/>
+  
   <body>
+    <head>
+
+
+
+    </head>
     <links>
-      <item name="Norconex" href="http://www.norconex.com" />
+      <item name="Download" href="download.html"/>
       <item name="Support" href="support.html"/>
     </links>
 
-    <menu name="Overview">
-      <item name="Introduction" href="index.html"/>
-      <item name="Javadoc (Latest release)" href="apidocs/index.html"/>
-      <item name="License" href="license.html"/>
-      <item name="Download" href="download.html"/>
-      <item name="Support" href="support.html"/>
-      <!-- <item name="FAQ" href="faq.html"/>-->
-      <!-- <item name="Release Notes" href="release-notes.html" /> -->
-      <!-- <item name="Road Map" href="roadmap.html" /> -->
+    <menu name="Contribute">
+      <item name="Issues" href="https://github.com/norconex/collector-http/issues"/>
+      <item name="Fork on GitHub"  href="https://github.com/Norconex/collector-http"/>
     </menu>
 
-    <menu ref="reports"/>
+    <menu name="Main">
+      <item name="Support" href="support.html"/>
+      <item name="Licensing" href="license.html"/>
+      <item name="Norconex Site"  href="http://www.norconex.com"/>
+    </menu>
+
+    <menu name="Maven Documentation" ref="reports"/>
 
     <menu name="Norconex Products">
-      <item name="Committer" href="http://www.norconex.com/product/committer"/>
-      <item name="HTTP Collector"  href="http://www.norconex.com/product/collector-http"/>
       <item name="Search Analytics" href="http://www.norconex.com/analytics"/>
-      <item name="Importer" href="http://www.norconex.com/product/importer"/>
+      <item name="HTTP Collector" href="http://www.norconex.com/product/collector-http"/>
+      <item name="Committer" href="http://www.norconex.com/product/committer"/>
+      <item name="Importer"  href="http://www.norconex.com/product/importer"/>
+      <item name="JEF" href="http://www.norconex.com/product/jef"/>
       <item name="Commons Lang" href="http://www.norconex.com/product/commons-lang"/>
     </menu>
+
 
   </body>
 
   <googleAnalyticsAccountId>UA-23162620-1</googleAnalyticsAccountId>
 
-  <poweredBy>
-    <logo name="Maven" href="http://maven.apache.org/" position="right"
-          img="images/build-by-maven-white.png"/>
-    <logo name="GPL" href="http://www.gnu.org/licenses/gpl.html" position="right"
-          img="images/gplv3-88x31.png"/>
-  </poweredBy>
 </project>

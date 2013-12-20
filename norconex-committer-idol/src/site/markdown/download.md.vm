@@ -1,40 +1,47 @@
-<!---
+#*
  Copyright 2010-2013 Norconex Inc.
  
- This file is part of Norconex JEF.
+ This file is part of Norconex IDOL Committer.
  
- Norconex JEF is free software: you can redistribute it and/or modify
+Norconex IDOL Committer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
  
- Norconex JEF is distributed in the hope that it will be useful, 
+Norconex IDOL Committer is distributed in the hope that it will be useful, 
  but WITHOUT ANY WARRANTY; without even the implied warranty of 
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with Norconex JEF. If not, see <http://www.gnu.org/licenses/>.
--->
+ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
+*#
+#set($h1 = '#')
+#set($h2 = '##')
+#set($h3 = '###')
+#set($h4 = '####')
 <head><title>Download</title><meta name="Author" content="Norconex Inc." /></head> 
 
-#parse("adsense.html")
 
-Download
-=========
+$h2 Latest Release
 
-Latest stable release
-   
-  * [${currentStableVersion}](http://norconex.s3.amazonaws.com/repo/release/com/norconex/collectors/norconex-committer-solr/${currentStableVersion}/norconex-committer-solr-${currentStableVersion}.zip)
+**[Download Release ${currentStableVersion}](http://norconex.s3.amazonaws.com/repo/release/com/norconex/collectors/norconex-committer-idol/${currentStableVersion}/norconex-committer-idol-${currentStableVersion}.zip)**
 
-Older releases:
+This release is the first open-source release of IDOL Committer.
   
-  * [1.0.0](http://norconex.s3.amazonaws.com/repo/release/com/norconex/collectors/norconex-committer-solr/1.0.0/norconex-committer-solr-1.0.0.zip)
+[View detailed Release Notes](changes-report.html) for all releases.
 
-Source
-------
+Older releases: None yet
+  
+
+********************************************************************************
+  
+<a name="source"></a>
+  
+$h2 Source
  
-Source code can be obtained on GitHub: <https://github.com/Norconex/collectors/tree/master/norconex-committer-solr>.
+Source code can be obtained on GitHub: 
+(https://github.com/Norconex/committer-idol).
   
 Maven users can add the following to their pom.xml:
   
@@ -52,7 +59,7 @@ Maven users can add the following to their pom.xml:
 
     <dependency>
         <groupId>com.norconex.collectors</groupId>
-        <artifactId>norconex-committer-solr</artifactId>
+        <artifactId>norconex-committer-idol</artifactId>
         <version>${currentStableVersion}</version>
     </dependency>
 

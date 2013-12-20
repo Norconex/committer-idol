@@ -1,6 +1,6 @@
 /* Copyright 2010-2013 Norconex Inc.
  *
- * This file is part of Norconex Committer IDOL.
+ * This file is part of Norconex IDOL Committer.
  *
  * Norconex Idol Committer is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Norconex Committer IDOL. If not, see
+ * along with Norconex IDOL Committer. If not, see
  * <http://www.gnu.org/licenses/>.
  */
 package com.norconex.committer.idol;
@@ -71,18 +71,18 @@ import com.norconex.commons.lang.url.QueryString;
  *         &lt;param name="(parameter name)"&gt;(parameter value)&lt;/param&gt;
  *      &lt;/dreDeleteRefParams&gt;
  *      &lt;idSourceField keep="[false|true]"&gt;
- *         (Name of source field that will be mapped to the Solr "id" field
- *         or whatever "idTargetField" specified.
+ *         (Name of source field that will be mapped to the IDOL "DREREFERENCE"
+ *         field or whatever "idTargetField" specified.
  *         Default is the document reference metadata field: 
  *         "document.reference".  Once re-mapped, the metadata source field is 
  *         deleted, unless "keep" is set to <code>true</code>.)
  *      &lt;/idSourceField&gt;
  *      &lt;idTargetField&gt;
- *         (Name of IDOL target field where the store a document unique 
+ *         (Name of IDOL target field where to store a document unique 
  *         identifier (idSourceField).  If not specified, default 
  *         is "DREREFERENCE".) 
  *      &lt;/idTargetField&gt;
- *      &lt;contentSourceField keep="[false|true]&gt;
+ *      &lt;contentSourceField keep="[false|true]&gt";
  *         (If you wish to use a metadata field to act as the document 
  *         "content", you can specify that field here.  Default 
  *         does not take a metadata field but rather the document content.
