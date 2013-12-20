@@ -103,6 +103,7 @@ along with Norconex Commiter IDOL. If not, see <http://www.gnu.org/licenses/>.
     </head>
     <links>
       <item name="Download" href="download.html"/>
+      <item name="API" href="apidocs/index.html"/>
       <item name="Support" href="support.html"/>
     </links>
 

@@ -246,7 +246,7 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
             ]]>
           </footer>
           <show>protected</show>
-          <detectLinks>true</detectLinks>
+          <detectLinks>false</detectLinks>
         </configuration>
         <executions>
           <execution>
@@ -333,10 +333,9 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9</version>
         <configuration>
-          <stylesheetfile>${basedir}/src/main/resources/javadoc.css</stylesheetfile>
           <overview>${basedir}/src/main/resources/javadoc-overview.html</overview>
           <show>protected</show>
-          <detectLinks>true</detectLinks>
+          <detectLinks>false</detectLinks>
         </configuration>
         <reportSets>
           <reportSet>
