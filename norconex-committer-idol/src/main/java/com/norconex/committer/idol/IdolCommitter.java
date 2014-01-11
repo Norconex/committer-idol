@@ -340,28 +340,38 @@ public class IdolCommitter extends AbstractMappedCommitter {
         StringBuilder sb = new StringBuilder();
         try {
             // Create a database key for the idol idx document
-            sb.append(("\n#DREREFERENCE "));
-            sb.append(properties.getString(getIdTargetField()));
-
+            String targetIdField = getIdTargetField();
+            if (DEFAULT_IDOL_REFERENCE_FIELD.equalsIgnoreCase(targetIdField)) {
+                sb.append(("\n#DREREFERENCE "));
+                sb.append(properties.getString(targetIdField));
+            } else {
+                appendField(
+                        sb, targetIdField, properties.getString(targetIdField));
+            }
+            
             // Loop thru the list of properties and create idx fields
             // accordingly.
             for (Entry<String, List<String>> entry : properties.entrySet()) {
                 if (!EqualsUtil.equalsAny(entry.getKey(), 
                         getIdTargetField(), getContentTargetField())) {
                     for (String value : entry.getValue()) {
-                        sb.append("\n#DREFIELD ");
-                        sb.append(entry.getKey());
-                        sb.append("=\"");
-                        sb.append(value);
-                        sb.append("\"");
+                        appendField(sb, entry.getKey(), value);
                     }
                 }
             }
             sb.append("\n#DREDBNAME ");
             sb.append(databaseName);
-            sb.append("\n#DRECONTENT\n");
-            sb.append(properties.getString(getContentTargetField()));
-            sb.append("\n#DREENDDOC ");
+
+            // Store content at specified location
+            String targetCtntField = getContentTargetField();
+            if (DEFAULT_IDOL_CONTENT_FIELD.equalsIgnoreCase(targetCtntField)) {
+                sb.append("\n#DRECONTENT\n");
+                sb.append(properties.getString(targetCtntField));
+                sb.append("\n#DREENDDOC ");
+            } else {
+                appendField(sb, targetCtntField, 
+                        properties.getString(targetCtntField));
+            }
             sb.append("\n");
         } finally {
             IOUtils.closeQuietly(is);
@@ -369,7 +379,6 @@ public class IdolCommitter extends AbstractMappedCommitter {
         return sb.toString();
     }
 
-    
     /**
      * Commits the addition operations.
      * @param addOperations additions
@@ -425,6 +434,14 @@ public class IdolCommitter extends AbstractMappedCommitter {
         post(syncURL, StringUtils.EMPTY);
     }
 
+    private void appendField(StringBuilder sb, String name, String value) {
+        sb.append("\n#DREFIELD ");
+        sb.append(name);
+        sb.append("=\"");
+        sb.append(value);
+        sb.append("\"");
+    }
+    
     /**
      * Creates a HTTP URL connection with the proper Post method and properties.
      * @param url the URL to open
