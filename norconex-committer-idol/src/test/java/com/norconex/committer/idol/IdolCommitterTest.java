@@ -30,7 +30,6 @@ import com.norconex.commons.lang.config.ConfigurationUtil;
 /**
  * @author Pascal Essiembre
  */
-@SuppressWarnings("javadoc")
 public class IdolCommitterTest {
 
 
