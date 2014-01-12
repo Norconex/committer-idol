@@ -22,7 +22,7 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.collectors</groupId>
   <artifactId>norconex-committer-idol</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <name>Norconex Committer IDOL</name>
 
   <!-- PROPERTIES -->
@@ -88,7 +88,7 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
     <dependency>
       <groupId>com.norconex.collectors</groupId>
       <artifactId>norconex-committer</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
+      <version>1.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -221,7 +221,7 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
         <version>2.9</version>
         <configuration>
           <overview>${basedir}/src/main/resources/javadoc-overview.html</overview>
-          <header><![CDATA[
+         <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
             <span class="siteLink">
               <a href="http://www.norconex.com/product/committer-idol">Norconex IDOL Committer</a>
@@ -229,17 +229,6 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
             ]]>
           </header>
           <footer><![CDATA[
-            <script type="text/javascript">
-              var _gaq = _gaq || [];
-              _gaq.push(['_setAccount', 'UA-23162620-1']);
-              _gaq.push(['_setDomainName', 'norconex.com']);
-              _gaq.push(['_trackPageview']);
-              (function() {
-                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-              })();
-            </script>
             <a style="font-size: 1.4em;" href="https://github.com/norconex/committer-idol/issues">Submit an Issue</a>
             &nbsp;&nbsp;|&nbsp;&nbsp; 
             <a style="font-size: 1.4em;" href="http://www.norconex.com">www.norconex.com</a>
@@ -247,6 +236,11 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
           </footer>
           <show>protected</show>
           <detectLinks>false</detectLinks>
+          <links>
+            <link>http://www.norconex.com/product/commons-lang/apidocs/</link>
+            <link>http://www.norconex.com/product/committer/apidocs/</link>
+            <link>http://commons.apache.org/proper/commons-configuration/apidocs/</link>
+          </links>
         </configuration>
         <executions>
           <execution>
@@ -334,8 +328,37 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
         <version>2.9</version>
         <configuration>
           <overview>${basedir}/src/main/resources/javadoc-overview.html</overview>
+          <header><![CDATA[
+            <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
+            <span class="siteLink">
+              <a href="http://www.norconex.com/product/committer-idol">Norconex IDOL Committer</a>
+            </span>
+            ]]>
+          </header>
+          <footer><![CDATA[
+            <script type="text/javascript">
+              var _gaq = _gaq || [];
+              _gaq.push(['_setAccount', 'UA-23162620-1']);
+              _gaq.push(['_setDomainName', 'norconex.com']);
+              _gaq.push(['_trackPageview']);
+              (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+              })();
+            </script>
+            <a style="font-size: 1.4em;" href="https://github.com/norconex/committer-idol/issues">Submit an Issue</a>
+            &nbsp;&nbsp;|&nbsp;&nbsp; 
+            <a style="font-size: 1.4em;" href="http://www.norconex.com">www.norconex.com</a>
+            ]]>
+          </footer>
           <show>protected</show>
           <detectLinks>false</detectLinks>
+          <links>
+            <link>http://www.norconex.com/product/commons-lang/apidocs/</link>
+            <link>http://www.norconex.com/product/committer/apidocs/</link>
+            <link>http://commons.apache.org/proper/commons-configuration/apidocs/</link>
+          </links>
         </configuration>
         <reportSets>
           <reportSet>
@@ -361,17 +384,6 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
           </reportSet>
         </reportSets>
       </plugin>
-<!--
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <links>
-            <link>http://commons.apache.org/lang/api</link>
-          </links>
-        </configuration>
-      </plugin>
- -->
     </plugins>
   </reporting>
   <developers>

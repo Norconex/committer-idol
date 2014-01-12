@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.0.0" date="2013-??-??" description="Open Source release">
+    <release version="1.0.0" date="2014-01-12" description="Open Source release">
       <action dev="essiembp" type="add">
         Initial release.  Norconex Commiter IDOL is open-source under GPL.
       </action>

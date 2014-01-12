@@ -25,7 +25,7 @@ Norconex IDOL Committer is distributed in the hope that it will be useful,
 
 The **IDOL Committer** library provides an implementation of 
 [Norconex Committer](http://www.norconex.com/product/committer) targeting
-[HP Autonomy(http://www.autonomy.com/).
+[HP Autonomy](http://www.autonomy.com/).
 
 The current stable version is **${currentStableVersion}**
 
