@@ -41,7 +41,8 @@ The current stable version is **${currentStableVersion}**
 $h2 Installation
 
 This committer is a library that you must include in another product classpath
-(along with committer dependencies).  For use with a Norconex Collector, 
+(along with committer dependencies).  For use with a Norconex Collector such
+as [Norconex HTTP Collector](http://www.norconex.com/product/collector-http/),
 follow these simple steps:
 
   * ([Download](./download.html)) the latest release of IDOL Committer
@@ -146,7 +147,7 @@ Tag descriptions:
    </tr>
    <tr>
      <td>commitBatchSize</td>
-     <td>Mmax number of document addition/deletion commands to send at 
+     <td>Maximum number of document addition/deletion commands to send at 
          once to IDOL.</td>
    </tr>
  </tbody>
