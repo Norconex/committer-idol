@@ -53,7 +53,7 @@ follow these simple steps:
     to `<collector_install_folder>/lib`.
     
   * If you notice different versions of the same library in the lib folder
-    It is usually best advised to keep the most recent copy only.
+    it is usually best advised to keep the most recent copy only.
     
 $h2 Configuration
 
