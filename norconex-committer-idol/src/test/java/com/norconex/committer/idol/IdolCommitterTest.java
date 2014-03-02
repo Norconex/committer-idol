@@ -54,7 +54,7 @@ public class IdolCommitterTest {
         outCommitter.setQueueSize(100);
         outCommitter.setCommitBatchSize(50);
         outCommitter.setHost("fake.idol.host.com");
-        outCommitter.setAciPort(9100);
+        outCommitter.setCfsPort(9100);
         outCommitter.setIndexPort(9001);
         outCommitter.setDatabaseName("Fake Database");
         outCommitter.addDreAddDataParam("aparam1", "avalue1");

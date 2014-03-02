@@ -22,7 +22,7 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.collectors</groupId>
   <artifactId>norconex-committer-idol</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0-SNAPSHOT</version>
   <name>Norconex Committer IDOL</name>
 
   <!-- PROPERTIES -->
@@ -88,7 +88,7 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
     <dependency>
       <groupId>com.norconex.collectors</groupId>
       <artifactId>norconex-committer</artifactId>
-      <version>1.1.0</version>
+      <version>1.2.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
