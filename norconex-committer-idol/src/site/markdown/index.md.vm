@@ -22,27 +22,20 @@ Norconex IDOL Committer is distributed in the hope that it will be useful,
 #set($h4 = '####')
 <head><title>Home</title><meta name="Author" content="Norconex Inc." /></head> 
 
+<p class="lead">
+<a href="download.html" class="btn btn-primary btn-large">Download ${currentStableVersion}</a> 
+<br/><br/>
 
-The **IDOL Committer** library provides an implementation of 
-[Norconex Committer](http://www.norconex.com/product/committer) targeting
-[HP Autonomy](http://www.autonomy.com/).
-
-The current stable version is **${currentStableVersion}**
-
-**Quick Links:**
-  
-  * [Download](./download.html)
-  
-  * [API documentation](./apidocs/index.html)
-    
-  * [Release notes](./changes-report.html)
-
+The <b>IDOL Committer</b> library provides an implementation of 
+<a href="http://www.norconex.com/product/committer">Norconex Committer</a>
+targeting <a href="http://www.autonomy.com/">HP Autonomy IDOL</a>.
+</p>
 
 $h2 Installation
 
 This committer is a library that you must include in another product classpath
-(along with committer dependencies).  For use with a Norconex Collector such
-as [Norconex HTTP Collector](http://www.norconex.com/product/collector-http/),
+(along with committer dependencies).  For use with a Norconex Collector
+(like [Norconex HTTP Collector](http://www.norconex.com/product/collector-http)), 
 follow these simple steps:
 
   * ([Download](./download.html)) the latest release of IDOL Committer
@@ -55,14 +48,15 @@ follow these simple steps:
   * If you notice different versions of the same library in the lib folder
     it is usually best advised to keep the most recent copy only.
     
+    
 $h2 Configuration
 
 When used with a Norconex Collector, you can use the following XML to configure
 the IDOL Committer:
 
     <committer class="com.norconex.committer.idol.IdolCommitter">
+        <!-- To commit documents to IDOL or DIH: -->
         <host>...</host>
-        <aciPort>...</aciPort>
         <indexPort>...</indexPort>
         <databaseName>...</databaseName>
         <dreAddDataParams>
@@ -71,6 +65,11 @@ the IDOL Committer:
         <dreDeleteRefParams>
             <param name="(name)">(value)</param>
         </dreDeleteRefParams>
+
+        <!-- To commit documents to CFS: -->
+        <host>...</host>
+        <cfsPort>...</cfsPort>
+
         <idSourceField keep="[false|true]">...</idSourceField>
         <idTargetField>...</idTargetField>
         <contentSourceField keep="[false|true]">...</contentSourceField>
@@ -78,6 +77,8 @@ the IDOL Committer:
         <queueDir>...</queueDir>
         <queueSize>...</queueSize>
         <commitBatchSize>...</commitBatchSize>
+        <maxRetries>...</maxRetries>
+        <maxRetryWait>...</maxRetryWait>
     </committer>
 
 Tag descriptions:
@@ -95,12 +96,12 @@ Tag descriptions:
      <td>IDOL Server or DIH host name.</td>
    </tr>
    <tr>
-     <td>aciPort</td>
-     <td>IDOL action port.</td>
+     <td>indexPort</td>
+     <td>IDOL indexing port. Only one of indexPort or cfsPort can be specified.</td>
    </tr>
    <tr>
-     <td>indexPort</td>
-     <td>IDOL indexing port.</td>
+     <td>cfsPort</td>
+     <td>CFS port. Only one of indexPort or cfsPort can be specified.</td>
    </tr>
    <tr>
      <td>databaseName</td>
@@ -149,6 +150,14 @@ Tag descriptions:
      <td>commitBatchSize</td>
      <td>Maximum number of document addition/deletion commands to send at 
          once to IDOL.</td>
+   </tr>
+   <tr>
+     <td>maxRetries</td>
+     <td>Maximum retries upon commit failures.  Default is 0 (no retry).</td>
+   </tr>
+   <tr>
+     <td>maxRetryWait</td>
+     <td>Maximum delay (millisecond) between retries. Default is 0 (no delay).</td>
    </tr>
  </tbody>
 </table>

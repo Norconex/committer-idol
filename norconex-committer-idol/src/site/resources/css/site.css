@@ -1,19 +1,19 @@
 /* Copyright 2010-2013 Norconex Inc.
  * 
- * This file is part of Norconex IDOL Committer.
+ * This file is part of Norconex Commons Lang.
  * 
- * Norconex IDOL Committer is free software: you can redistribute it and/or modify
+ * Norconex Commons Lang is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
- * Norconex IDOL Committer is distributed in the hope that it will be useful, 
+ * Norconex Commons Lang is distributed in the hope that it will be useful, 
  * but WITHOUT ANY WARRANTY; without even the implied warranty of 
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
+ * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
  */
 
 .color-highlight {
@@ -88,13 +88,13 @@
 
 
 /* -------------- FIX/MODIF TO reflow-skin.css ------------------------- */
-.project-norconex h1[id]:before,
-.project-norconex h2[id]:before,
-.project-norconex h3[id]:before,
-.project-norconex h4[id]:before,
-.project-norconex h5[id]:before,
-.project-norconex h6[id]:before,
-.project-norconex a[name]:before {
+.project-norconex-committer-idol h1[id]:before,
+.project-norconex-committer-idol h2[id]:before,
+.project-norconex-committer-idol h3[id]:before,
+.project-norconex-committer-idol h4[id]:before,
+.project-norconex-committer-idol h5[id]:before,
+.project-norconex-committer-idol h6[id]:before,
+.project-norconex-committer-idol a[name]:before {
     display:block; 
     content:""; 
     height:0px; 
@@ -106,16 +106,22 @@
 .breadcrumb {
   height: 1.5em;
 }
- 
-body.project-norconex {
+#banner.row div.pull-left {
+  margin-top: 20px;
+  xxmargin-top: 10px;
+}
+
+
+/* 
+body.project-norconex-committer-idol {
   padding-top: 42px;
   padding-bottom: 20px;
 }
 
-.project-norconex header.jumbotron.subhead #banner.row {
+.project-norconex-committer-idol header.jumbotron.subhead #banner.row {
   margin-top: 5px;
 }
-.project-norconex header.jumbotron.subhead ul.breadcrumb {
+.project-norconex-committer-idol header.jumbotron.subhead ul.breadcrumb {
   height: 0px;
   background-color: #ffffff;
   border-width: 0px;
@@ -123,8 +129,4 @@ body.project-norconex {
   margin: 0px 0px 0px 0px;
   font-size: 13px;
 }
-
-#banner.row div.pull-left {
-  margin-top: 20px;
-  xxmargin-top: 10px;
-}
+*/

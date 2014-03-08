@@ -7,6 +7,16 @@
   </properties>
   <body>
 
+    <release version="1.1.0" date="2014-??-??" description="Feature release">
+      <action dev="essiembp" type="add">
+        Added support for sending documents to Autonomy Connector Framework 
+        Server (CFS).
+      </action>
+      <action dev="essiembp" type="add">
+        Can now retry on commit failures and specify a delay between retries.
+      </action>
+    </release>
+
     <release version="1.0.0" date="2014-01-12" description="Open Source release">
       <action dev="essiembp" type="add">
         Initial release.  Norconex Commiter IDOL is open-source under GPL.

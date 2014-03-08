@@ -20,28 +20,28 @@ Norconex IDOL Committer is distributed in the hope that it will be useful,
 #set($h2 = '##')
 #set($h3 = '###')
 #set($h4 = '####')
+#set($releasePath = "http://norconex.s3.amazonaws.com/repo/release/com/norconex/collectors/norconex-committer-idol")
 <head><title>Download</title><meta name="Author" content="Norconex Inc." /></head> 
 
+$h2 Binaries
 
-$h2 Latest Release
+**[Download Latest Release ${currentStableVersion}]($releasePath/${currentStableVersion}/norconex-committer-idol-${currentStableVersion}.zip)**
 
-**[Download Release ${currentStableVersion}](http://norconex.s3.amazonaws.com/repo/release/com/norconex/collectors/norconex-committer-idol/${currentStableVersion}/norconex-committer-idol-${currentStableVersion}.zip)**
+  * Added support for sending documents to Autonomy Connector Framework Server (CFS).
+  * Can now retry on commit failures and specify a delay between retries.
+  * [View all changes]((changes-report.html))
 
-This release is the first open-source release of IDOL Committer.
-  
-[View detailed Release Notes](changes-report.html) for all releases.
+**Older Releases**
 
-Older releases: None yet
-  
+  * [1.0.0]($releasePath/1.0.0/norconex-committer-idol-1.0.0.zip)<small>
+    [[Release Notes](changes-report.html#a1.0.0)]</small>
 
-********************************************************************************
-  
+
 <a name="source"></a>
   
 $h2 Source
  
-Source code can be obtained on GitHub: 
-(https://github.com/Norconex/committer-idol).
+Source code can be obtained on [GitHub](https://github.com/Norconex/committer-idol).
   
 Maven users can add the following to their pom.xml:
   

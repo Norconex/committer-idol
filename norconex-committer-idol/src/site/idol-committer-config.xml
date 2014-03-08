@@ -2,8 +2,8 @@
   -- when applicable.
   -->
 <committer class="com.norconex.committer.idol.IdolCommitter">
+    <!-- To commit documents to IDOL or DIH: -->
     <host></host>
-    <aciPort>9000</aciPort>
     <indexPort>9001</indexPort>
     <databaseName></databaseName>
     <dreAddDataParams>
@@ -12,6 +12,11 @@
     <dreDeleteRefParams>
        <param name=""></param>
     </dreDeleteRefParams>
+
+    <!-- To commit documents to CFS: -->
+    <host>(CFS host name or IP)</host>
+    <cfsPort>(CFS Server/Ingest port)</cfsPort>
+
     <idSourceField keep="flase">document.reference</idSourceField>
     <idTargetField>DREREFERENCE</idTargetField>
     <contentSourceField keep="false" />
@@ -19,4 +24,6 @@
     <queueDir>./committer-queue</queueDir>
     <queueSize>1000</queueSize>
     <commitBatchSize>100</commitBatchSize>
+    <maxRetries>0</maxRetries>
+    <maxRetryWait>0</maxRetryWait>
 </committer>
