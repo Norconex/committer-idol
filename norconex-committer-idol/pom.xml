@@ -156,7 +156,7 @@ along with Norconex IDOL Committer. If not, see <http://www.gnu.org/licenses/>.
               <artifactId>maven-site-plugin</artifactId>
               <version>3.3</version>
               <configuration>
-                  <generateReports>false</generateReports>
+                  <generateReports>true</generateReports>
                   <templateFile>
                       ${basedir}/src/site/resources/skin/reflow-modified.vm
                   </templateFile>

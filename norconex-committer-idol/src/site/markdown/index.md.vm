@@ -33,8 +33,8 @@ targeting <a href="http://www.autonomy.com/">HP Autonomy IDOL</a>.
 
 $h2 Installation
 
-This committer is a library that you must include in another product classpath
-(along with committer dependencies).  For use with a Norconex Collector
+This IDOL Committer is a library that you must include in another product 
+classpath (along with committer dependencies). For use with a Norconex Collector
 (like [Norconex HTTP Collector](http://www.norconex.com/product/collector-http)), 
 follow these simple steps:
 
