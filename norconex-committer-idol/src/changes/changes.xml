@@ -7,6 +7,19 @@
   </properties>
   <body>
 
+    <release version="2.0.0" date="2014-??-??" description="Major release">
+      <action dev="essiembp" type="update">
+        Upgraded to work with Norconex Committer 2.0.0 (won't work with 
+        older versions).
+      </action>
+      <action dev="essiembp" type="update">
+        Document "id" is now referred as document "reference".
+      </action>
+      <action dev="essiembp" type="update">
+        Now requires Java 7 or higher.
+      </action>
+    </release>
+
     <release version="1.1.0" date="2014-??-??" description="Feature release">
       <action dev="essiembp" type="add">
         Added support for sending documents to Autonomy Connector Framework 

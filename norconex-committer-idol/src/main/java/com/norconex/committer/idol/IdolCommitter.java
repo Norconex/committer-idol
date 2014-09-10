@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  *
  * This file is part of Norconex IDOL Committer.
  *
@@ -82,18 +82,18 @@ import com.norconex.commons.lang.url.QueryString;
  *      &lt;cfsPort&gt;(CFS Server/Ingest port)&lt;/cfsPort&gt;
  *
  *      &lt;!-- Common settings: --&gt;
- *      &lt;idSourceField keep="[false|true]"&gt;
- *         (Name of source field that will be mapped to the IDOL "DREREFERENCE"
- *         field or whatever "idTargetField" specified.
- *         Default is the document reference metadata field: 
- *         "document.reference".  Once re-mapped, the metadata source field is 
+ *      &lt;sourceReferenceField keep="[false|true]"&gt;
+ *         (Optional name of field that contains the document reference, when 
+ *         the default document reference is not used.  The reference value
+ *         will be mapped to the IDOL "DREREFERENCE" field, or the 
+ *         "targetReferenceField" specified.
+ *         Once re-mapped, this metadata source field is 
  *         deleted, unless "keep" is set to <code>true</code>.)
- *      &lt;/idSourceField&gt;
- *      &lt;idTargetField&gt;
- *         (Name of IDOL target field where to store a document unique 
- *         identifier (idSourceField).  If not specified, default 
- *         is "DREREFERENCE".) 
- *      &lt;/idTargetField&gt;
+ *      &lt;/sourceReferenceField&gt;
+ *      &lt;targetReferenceField&gt;
+ *         (Optional name of IDOL target field where to store the source 
+ *         reference. If not specified, default is "DREREFERENCE".) 
+ *      &lt;/targetReferenceField&gt;
  *      &lt;contentSourceField keep="[false|true]&gt";
  *         (If you wish to use a metadata field to act as the document 
  *         "content", you can specify that field here.  Default 
@@ -105,11 +105,11 @@ import com.norconex.commons.lang.url.QueryString;
  *         (IDOL target field name for a document content/body.
  *          Default is: DRECONTENT)
  *      &lt;/contentTargetField&gt;
- *      &lt;queueDir&gt;(optional path where to queue files)&lt;/queueDir&gt;
- *      &lt;queueSize&gt;(max queue size before committing)&lt;/queueSize&gt;
  *      &lt;commitBatchSize&gt;
  *          (max number of docs to send IDOL at once)
  *      &lt;/commitBatchSize&gt;
+ *      &lt;queueDir&gt;(optional path where to queue files)&lt;/queueDir&gt;
+ *      &lt;queueSize&gt;(max queue size before committing)&lt;/queueSize&gt;
  *      &lt;maxRetries&gt;(max retries upon commit failures)&lt;/maxRetries&gt;
  *      &lt;maxRetryWait&gt;(max delay between retries)&lt;/maxRetryWait&gt;
  *   &lt;/committer&gt;
@@ -146,7 +146,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
     public IdolCommitter() {
         super();
         setContentTargetField(DEFAULT_IDOL_CONTENT_FIELD);
-        setIdTargetField(DEFAULT_IDOL_REFERENCE_FIELD);
+        setTargetReferenceField(DEFAULT_IDOL_REFERENCE_FIELD);
     }
 
     /**
@@ -351,7 +351,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
         StringBuilder sb = new StringBuilder();
         try {
             // Create a database key for the idol idx document
-            String targetIdField = getIdTargetField();
+            String targetIdField = getTargetReferenceField();
             if (DEFAULT_IDOL_REFERENCE_FIELD.equalsIgnoreCase(targetIdField)) {
                 sb.append(("\n#DREREFERENCE "));
                 sb.append(properties.getString(targetIdField));
@@ -364,7 +364,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
             // accordingly.
             for (Entry<String, List<String>> entry : properties.entrySet()) {
                 if (!EqualsUtil.equalsAny(entry.getKey(), 
-                        getIdTargetField(), getContentTargetField())) {
+                        getTargetReferenceField(), getContentTargetField())) {
                     for (String value : entry.getValue()) {
                         appendField(sb, entry.getKey(), value);
                     }
@@ -613,7 +613,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
             writer.writeStartElement("document");
 
             // Create a database key for the idol XML document
-            String targetIdField = getIdTargetField();
+            String targetIdField = getTargetReferenceField();
             if (DEFAULT_IDOL_REFERENCE_FIELD.equalsIgnoreCase(targetIdField)) {
                 writer.writeStartElement("reference");
                 writer.writeCharacters(properties.getString(targetIdField));
@@ -630,7 +630,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
             // accordingly.
             for (Entry<String, List<String>> entry : properties.entrySet()) {
                 if (!EqualsUtil.equalsAny(entry.getKey(), 
-                        getIdTargetField(), getContentTargetField())) {
+                        getTargetReferenceField(), getContentTargetField())) {
                     for (String value : entry.getValue()) {
                         writer.writeStartElement("metadata");
                         writer.writeAttribute("name", entry.getKey());

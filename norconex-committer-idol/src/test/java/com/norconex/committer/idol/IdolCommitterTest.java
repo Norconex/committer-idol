@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 Norconex Inc.
+ * Copyright 2010-2014 Norconex Inc.
  *
  * This file is part of Norconex Idol Committer.
  *
@@ -47,10 +47,10 @@ public class IdolCommitterTest {
         outCommitter.setQueueDir("C:\\FakeTestDirectory\\");
         outCommitter.setContentSourceField("contentSourceField");
         outCommitter.setContentTargetField("contentTargetField");
-        outCommitter.setIdSourceField("idTargetField");
-        outCommitter.setIdTargetField("idTargetField");
+        outCommitter.setSourceReferenceField("idTargetField");
+        outCommitter.setTargetReferenceField("idTargetField");
         outCommitter.setKeepContentSourceField(true);
-        outCommitter.setKeepIdSourceField(false);
+        outCommitter.setKeepReferenceSourceField(false);
         outCommitter.setQueueSize(100);
         outCommitter.setCommitBatchSize(50);
         outCommitter.setHost("fake.idol.host.com");
