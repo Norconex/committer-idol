@@ -121,8 +121,6 @@ import com.norconex.commons.lang.url.QueryString;
  */
 public class IdolCommitter extends AbstractMappedCommitter {
 
-    private static final long serialVersionUID = -5716008670360409137L;
-
     private static final Logger LOG = LogManager.getLogger(IdolCommitter.class);
 
     /** Default key field in Autonomy Idol database. */
