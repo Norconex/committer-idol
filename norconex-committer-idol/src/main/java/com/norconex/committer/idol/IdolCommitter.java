@@ -646,7 +646,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
 
             writer.writeStartElement("source");
             writer.writeAttribute("content", Base64.encodeBase64String(
-                    targetCtntValue.getBytes()));
+                    targetCtntValue.getBytes(CharEncoding.UTF_8)));
             writer.writeEndElement();
 
             writer.writeEndElement();
