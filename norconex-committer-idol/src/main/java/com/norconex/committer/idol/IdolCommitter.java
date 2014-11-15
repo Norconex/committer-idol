@@ -46,11 +46,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.committer.AbstractMappedCommitter;
-import com.norconex.committer.CommitterException;
-import com.norconex.committer.IAddOperation;
-import com.norconex.committer.ICommitOperation;
-import com.norconex.committer.IDeleteOperation;
+import com.norconex.committer.core.AbstractMappedCommitter;
+import com.norconex.committer.core.CommitterException;
+import com.norconex.committer.core.IAddOperation;
+import com.norconex.committer.core.ICommitOperation;
+import com.norconex.committer.core.IDeleteOperation;
 import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.url.QueryString;
