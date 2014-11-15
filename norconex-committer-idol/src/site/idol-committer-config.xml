@@ -17,8 +17,8 @@
     <host>(CFS host name or IP)</host>
     <cfsPort>(CFS Server/Ingest port)</cfsPort>
 
-    <idSourceField keep="flase">document.reference</idSourceField>
-    <idTargetField>DREREFERENCE</idTargetField>
+    <sourceReferenceField keep="flase">document.reference</sourceReferenceField>
+    <targetReferenceField>DREREFERENCE</targetReferenceField>
     <sourceContentField keep="false" />
     <targetContentField>DRECONTENT</targetContentField>
     <queueDir>./committer-queue</queueDir>
