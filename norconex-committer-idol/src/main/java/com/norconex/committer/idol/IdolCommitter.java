@@ -94,17 +94,17 @@ import com.norconex.commons.lang.url.QueryString;
  *         (Optional name of IDOL target field where to store the source 
  *         reference. If not specified, default is "DREREFERENCE".) 
  *      &lt;/targetReferenceField&gt;
- *      &lt;contentSourceField keep="[false|true]&gt";
+ *      &lt;sourceContentField keep="[false|true]&gt";
  *         (If you wish to use a metadata field to act as the document 
  *         "content", you can specify that field here.  Default 
  *         does not take a metadata field but rather the document content.
  *         Once re-mapped, the metadata source field is deleted,
  *         unless "keep" is set to <code>true</code>.)
- *      &lt;/contentSourceField&gt;
- *      &lt;contentTargetField&gt;
+ *      &lt;/sourceContentField&gt;
+ *      &lt;targetContentField&gt;
  *         (IDOL target field name for a document content/body.
  *          Default is: DRECONTENT)
- *      &lt;/contentTargetField&gt;
+ *      &lt;/targetContentField&gt;
  *      &lt;commitBatchSize&gt;
  *          (max number of docs to send IDOL at once)
  *      &lt;/commitBatchSize&gt;
@@ -143,7 +143,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
      */
     public IdolCommitter() {
         super();
-        setContentTargetField(DEFAULT_IDOL_CONTENT_FIELD);
+        setTargetContentField(DEFAULT_IDOL_CONTENT_FIELD);
         setTargetReferenceField(DEFAULT_IDOL_REFERENCE_FIELD);
     }
 
@@ -362,7 +362,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
             // accordingly.
             for (Entry<String, List<String>> entry : properties.entrySet()) {
                 if (!EqualsUtil.equalsAny(entry.getKey(), 
-                        getTargetReferenceField(), getContentTargetField())) {
+                        getTargetReferenceField(), getTargetContentField())) {
                     for (String value : entry.getValue()) {
                         appendField(sb, entry.getKey(), value);
                     }
@@ -374,7 +374,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
             }
 
             // Store content at specified location
-            String targetCtntField = getContentTargetField();
+            String targetCtntField = getTargetContentField();
             if (DEFAULT_IDOL_CONTENT_FIELD.equalsIgnoreCase(targetCtntField)) {
                 sb.append("\n#DRECONTENT\n");
                 sb.append(properties.getString(targetCtntField));
@@ -628,7 +628,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
             // accordingly.
             for (Entry<String, List<String>> entry : properties.entrySet()) {
                 if (!EqualsUtil.equalsAny(entry.getKey(), 
-                        getTargetReferenceField(), getContentTargetField())) {
+                        getTargetReferenceField(), getTargetContentField())) {
                     for (String value : entry.getValue()) {
                         writer.writeStartElement("metadata");
                         writer.writeAttribute("name", entry.getKey());
@@ -639,7 +639,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
             }
 
             // Store content at specified location
-            String targetCtntField = getContentTargetField();
+            String targetCtntField = getTargetContentField();
             String targetCtntValue = properties.getString(targetCtntField);
 
             writer.writeEndElement();

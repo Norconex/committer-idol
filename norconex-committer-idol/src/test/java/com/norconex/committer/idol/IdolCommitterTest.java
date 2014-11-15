@@ -45,12 +45,12 @@ public class IdolCommitterTest {
     public void testWriteRead() throws IOException {
         IdolCommitter outCommitter = new IdolCommitter();
         outCommitter.setQueueDir("C:\\FakeTestDirectory\\");
-        outCommitter.setContentSourceField("contentSourceField");
-        outCommitter.setContentTargetField("contentTargetField");
+        outCommitter.setSourceContentField("sourceContentField");
+        outCommitter.setTargetContentField("targetContentField");
         outCommitter.setSourceReferenceField("idTargetField");
         outCommitter.setTargetReferenceField("idTargetField");
-        outCommitter.setKeepContentSourceField(true);
-        outCommitter.setKeepReferenceSourceField(false);
+        outCommitter.setKeepSourceContentField(true);
+        outCommitter.setKeepSourceReferenceField(false);
         outCommitter.setQueueSize(100);
         outCommitter.setCommitBatchSize(50);
         outCommitter.setHost("fake.idol.host.com");

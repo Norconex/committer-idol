@@ -19,8 +19,8 @@
 
     <idSourceField keep="flase">document.reference</idSourceField>
     <idTargetField>DREREFERENCE</idTargetField>
-    <contentSourceField keep="false" />
-    <contentTargetField>DRECONTENT</contentTargetField>
+    <sourceContentField keep="false" />
+    <targetContentField>DRECONTENT</targetContentField>
     <queueDir>./committer-queue</queueDir>
     <queueSize>1000</queueSize>
     <commitBatchSize>100</commitBatchSize>

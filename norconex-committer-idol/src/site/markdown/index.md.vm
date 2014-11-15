@@ -72,8 +72,8 @@ the IDOL Committer:
 
         <idSourceField keep="[false|true]">...</idSourceField>
         <idTargetField>...</idTargetField>
-        <contentSourceField keep="[false|true]">...</contentSourceField>
-        <contentTargetField>...</contentTargetField>
+        <sourceContentField keep="[false|true]">...</sourceContentField>
+        <targetContentField>...</targetContentField>
         <queueDir>...</queueDir>
         <queueSize>...</queueSize>
         <commitBatchSize>...</commitBatchSize>
@@ -127,14 +127,14 @@ Tag descriptions:
          identifier (idSourceField).  Defaults to "DREREFERENCE".</td>
    </tr>
    <tr>
-     <td>contentSourceField</td>
+     <td>sourceContentField</td>
      <td>Optional metadata field to act as document "content".
          Default takes the content document itself.
          Once re-mapped, the metadata source field is deleted,
          unless "keep" is set to true.</td>
    </tr>
    <tr>
-     <td>contentTargetField</td>
+     <td>targetContentField</td>
      <td>Optional IDOL target field name for a document content/body.
           Default to "DRECONTENT".</td>
    </tr>
