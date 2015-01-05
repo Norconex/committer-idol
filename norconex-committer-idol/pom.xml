@@ -206,7 +206,7 @@
           <source>1.7</source>
           <links>
             <link>http://www.norconex.com/product/commons-lang/apidocs/</link>
-            <link>http://www.norconex.com/product/committer/apidocs/</link>
+            <link>http://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
             <link>http://commons.apache.org/proper/commons-configuration/apidocs/</link>
           </links>
         </configuration>
@@ -364,7 +364,7 @@
           <detectLinks>false</detectLinks>
           <links>
             <link>http://www.norconex.com/product/commons-lang/apidocs/</link>
-            <link>http://www.norconex.com/product/committer/apidocs/</link>
+            <link>http://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
             <link>http://commons.apache.org/proper/commons-configuration/apidocs/</link>
           </links>
         </configuration>
@@ -417,5 +417,5 @@
         <timezone>-4</timezone>
     </developer>
   </developers>
-  <url>http://norconex.com/product/committer-idol/</url>
+  <url>http://norconex.com/collectors/committer-idol/</url>
 </project>
