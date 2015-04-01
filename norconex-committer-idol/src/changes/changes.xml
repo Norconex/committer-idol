@@ -7,12 +7,16 @@
   </properties>
   <body>
   
-    <release version="2.0.1-SNAPSHOT" date="????-??-??" description="Maintenance release">
+    <release version="2.0.1" date="2015-04-01" description="Maintenance release">
       <action dev="essiembre" type="update">
         Added Sonatype repository to pom.xml for snapshot releases.
       </action>
       <action dev="essiembre" type="update">
-        Upgraded Norconex Committer Core to 2.0.1.
+        Updated several maven plugins and added SonarQube maven plugin.
+      </action>
+      <action dev="essiembre" type="update">
+        Library updates: Norconex Committer Core 2.0.1, SLF4j 1.7.12,
+        Apache Commons Codec 1.10.
       </action>      
     </release>  
 
