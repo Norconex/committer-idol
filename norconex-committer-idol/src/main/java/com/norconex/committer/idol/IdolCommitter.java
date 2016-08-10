@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ import com.norconex.commons.lang.url.QueryString;
  *         (Optional name of IDOL target field where to store the source 
  *         reference. If not specified, default is "DREREFERENCE".) 
  *      &lt;/targetReferenceField&gt;
- *      &lt;sourceContentField keep="[false|true]&gt";
+ *      &lt;sourceContentField keep="[false|true]"&gt;
  *         (If you wish to use a metadata field to act as the document 
  *         "content", you can specify that field here.  Default 
  *         does not take a metadata field but rather the document content.
@@ -336,9 +336,8 @@ public class IdolCommitter extends AbstractMappedCommitter {
 
     /**
      * Build an idol document using the idx file format
-     * @param is
-     * @param properties
-     * @param dbName
+     * @param is input stream
+     * @param properties properties
      * @return a string containing a document in the idx format
      */
     protected String buildIdxDocument(InputStream is, Properties properties) {
