@@ -1,5 +1,5 @@
 Norconex IDOL Committer
-Copyright 2010-2014 Norconex Inc.
+Copyright 2010-2016 Norconex Inc.
 
 General Information:
 ====================
@@ -8,7 +8,7 @@ For any inquiries about Norconex IDOL Committer, please contact
 Norconex Inc. at info@norconex.com.
 
 This product website and documentation is located at:
-http://www.norconex.com/collectors/committer-idol
+https://www.norconex.com/collectors/committer-idol
 
 Norconex licenses:
 ==================

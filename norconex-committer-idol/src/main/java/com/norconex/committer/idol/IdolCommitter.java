@@ -534,7 +534,8 @@ public class IdolCommitter extends AbstractMappedCommitter {
                 LOG.debug("Post parameters : " + content);
                 LOG.debug("Server Response Code : " + responseCode);
             }
-            String response = IOUtils.toString(con.getInputStream());
+            String response = IOUtils.toString(
+                    con.getInputStream(), CharEncoding.UTF_8);
             if ((isCFS() && !StringUtils.contains(response, "SUCCESS"))
                     || (!isCFS() 
                             && !StringUtils.contains(response, "INDEXID"))) {

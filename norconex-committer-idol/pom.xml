@@ -1,5 +1,5 @@
 <!--
-   Copyright 2013-2015 Norconex Inc.
+   Copyright 2013-2016 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.collectors</groupId>
   <artifactId>norconex-committer-idol</artifactId>
-  <version>2.0.1</version>
+  <version>2.1.0</version>
   <name>Norconex Committer IDOL</name>
+  <description>HP (Autonomy) IDOL implementation of Norconex Committer. This library will help you commit documents to an Autonomy IDOL Server.</description>
 
-  <!-- PROPERTIES -->
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>    
@@ -30,7 +30,6 @@
   </properties>
   <inceptionYear>2013</inceptionYear>
 
-  <!-- LICENSE INFORMATION -->
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -62,7 +61,7 @@
     <dependency>
       <groupId>com.norconex.collectors</groupId>
       <artifactId>norconex-committer-core</artifactId>
-      <version>2.0.1</version>
+      <version>2.0.5</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -76,20 +75,20 @@
     </dependency>
   </dependencies>
 
-  <description>HP (Autonomy) IDOL implementation of Norconex Committer. This library will help you commit documents to an Autonomy IDOL Server.</description>
-  <organization>
-    <name>Norconex Inc.</name>
-    <url>http://www.norconex.com</url>
-  </organization>
-  <scm>
-    <url>https://github.com/Norconex/committer-idol</url>
-    <connection>scm:git:git@github.com:Norconex/committer-idol.git</connection>
-    <developerConnection>scm:git:git@github.com:Norconex/committer-idol.git</developerConnection>
-  </scm>
-  <issueManagement>
-    <system>GitHub</system>
-    <url>https://github.com/Norconex/committer-idol/issues</url>
-  </issueManagement>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.norconex.commons</groupId>
+        <artifactId>norconex-commons-lang</artifactId>
+        <version>1.12.0</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.6</version>
+      </dependency>      
+    </dependencies>
+  </dependencyManagement>
 
   <build>
     <resources>
@@ -219,12 +218,13 @@
         <configuration>
           <overview>${basedir}/src/main/javadoc/overview.html</overview>
           <show>protected</show>
-          <detectLinks>false</detectLinks>
+          <nodeprecated>false</nodeprecated>
           <source>1.7</source>
+          <detectLinks>false</detectLinks>
           <links>
-            <link>http://www.norconex.com/product/commons-lang/apidocs/</link>
-            <link>http://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
-            <link>http://commons.apache.org/proper/commons-configuration/apidocs/</link>
+            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
+            <link>https://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
+            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
           </links>
         </configuration>
         <executions>
@@ -260,6 +260,14 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>2.6</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+            </manifest>
+          </archive>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -340,6 +348,10 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>2.7</version>
+        <configuration>
+          <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+        </configuration>
         <reportSets>
           <reportSet>
             <reports>
@@ -356,7 +368,7 @@
           <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
             <span class="siteLink">
-              <a target="_top" href="http://www.norconex.com/collectors/committer-idol">Norconex IDOL Committer</a>
+              <a target="_top" href="https://www.norconex.com/collectors/committer-idol">Norconex IDOL Committer</a>
             </span>
             ]]>
           </header>
@@ -374,15 +386,17 @@
             </script>
             <a style="font-size: 1.4em;" target="_top" href="https://github.com/norconex/committer-idol/issues">Submit an Issue</a>
             &nbsp;&nbsp;|&nbsp;&nbsp; 
-            <a style="font-size: 1.4em;" target="_top" href="http://www.norconex.com">www.norconex.com</a>
+            <a style="font-size: 1.4em;" target="_top" href="https://www.norconex.com">www.norconex.com</a>
             ]]>
           </footer>
           <show>protected</show>
-          <detectLinks>false</detectLinks>
+          <nodeprecated>false</nodeprecated>
+          <source>1.7</source>
+          <detectLinks>false</detectLinks>          
           <links>
-            <link>http://www.norconex.com/product/commons-lang/apidocs/</link>
-            <link>http://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
-            <link>http://commons.apache.org/proper/commons-configuration/apidocs/</link>
+            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
+            <link>https://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
+            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
           </links>
         </configuration>
         <reportSets>
@@ -398,35 +412,27 @@
       </plugin>
     </plugins>
   </reporting>
+
+  <organization>
+    <name>Norconex Inc.</name>
+    <url>https://www.norconex.com</url>
+  </organization>
+  <scm>
+    <url>https://github.com/Norconex/committer-idol</url>
+    <connection>scm:git:git@github.com:Norconex/committer-idol.git</connection>
+    <developerConnection>scm:git:git@github.com:Norconex/committer-idol.git</developerConnection>
+  </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/Norconex/committer-idol/issues</url>
+  </issueManagement>
   <developers>
-    <developer>
-      <id>jacobs</id>
-      <name>Stephen Jacob</name>
-      <email>stephen.jacob@norconex.com</email>
-      <organization>Norconex Inc.</organization>
-      <organizationUrl>http://www.norconex.com</organizationUrl>
-      <roles>
-        <role>developer</role>
-      </roles>
-      <timezone>-4</timezone>
-    </developer>
-    <developer>
-      <id>fourniem</id>
-      <name>Martin Fournier</name>
-      <email>martin.fournier@norconex.com</email>
-      <organization>Norconex Inc.</organization>
-      <organizationUrl>http://www.norconex.com</organizationUrl>
-      <roles>
-        <role>developer</role>
-      </roles>
-      <timezone>-4</timezone>
-    </developer>
     <developer>
         <id>essiembp</id>
         <name>Pascal Essiembre</name>
         <email>pascal.essiembre@norconex.com</email>
         <organization>Norconex Inc.</organization>
-        <organizationUrl>http://www.norconex.com</organizationUrl>
+        <organizationUrl>https://www.norconex.com</organizationUrl>
         <roles>
           <role>project leader</role>
           <role>developer</role>
@@ -434,5 +440,5 @@
         <timezone>-4</timezone>
     </developer>
   </developers>
-  <url>http://norconex.com/collectors/committer-idol/</url>
+  <url>https://www.norconex.com/collectors/committer-idol/</url>
 </project>
