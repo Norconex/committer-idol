@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.collectors</groupId>
   <artifactId>norconex-committer-idol</artifactId>
-  <version>2.1.0</version>
+  <version>2.1.1-SNAPSHOT</version>
   <name>Norconex Committer IDOL</name>
   <description>HP (Autonomy) IDOL implementation of Norconex Committer. This library will help you commit documents to an Autonomy IDOL Server.</description>
 

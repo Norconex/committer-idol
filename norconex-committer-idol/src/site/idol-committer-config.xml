@@ -1,6 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
 <!-- All possible Committer configuration options, with default values
-  -- when applicable.
-  -->
+   - when applicable.
+   -->
 <committer class="com.norconex.committer.idol.IdolCommitter">
     <!-- To commit documents to IDOL or DIH: -->
     <host></host>
