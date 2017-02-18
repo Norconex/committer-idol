@@ -50,12 +50,6 @@
   <xs:element name="indexPort" substitutionGroup="AbstractPort" type="xs:int" />
   <xs:element name="cfsPort" substitutionGroup="AbstractPort" type="xs:int" />
 
-<!-- 
-              <xs:element name="indexPort" type="xs:int" minOccurs="0" maxOccurs="1" />
-              <xs:element name="cfsPort" type="xs:int" minOccurs="0" maxOccurs="1" />
- -->
-
-
   <xs:complexType name="paramType">
     <xs:simpleContent>
       <xs:extension base="xs:string">
