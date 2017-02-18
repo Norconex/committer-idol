@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,18 @@
 package com.norconex.committer.idol;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.log4j.Level;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.log.CountingConsoleAppender;
 
 /**
  * @author Pascal Essiembre
@@ -57,6 +63,20 @@ public class IdolCommitterTest {
         outCommitter.addDreDeleteRefParam("dparam1", "dvalue1");
         outCommitter.addDreDeleteRefParam("dparam2", "dvalue2");
         System.out.println("Writing/Reading this: " + outCommitter);
-        ConfigurationUtil.assertWriteRead(outCommitter);
+        XMLConfigurationUtil.assertWriteRead(outCommitter);
     }
+    
+    @Test
+    public void testValidation() throws IOException {
+        CountingConsoleAppender appender = new CountingConsoleAppender();
+        appender.startCountingFor(XMLConfigurationUtil.class, Level.WARN);
+        try (Reader r = new InputStreamReader(getClass().getResourceAsStream(
+                ClassUtils.getShortClassName(getClass()) + ".xml"))) {
+            XMLConfigurationUtil.newInstance(r);
+        } finally {
+            appender.stopCountingFor(XMLConfigurationUtil.class);
+        }
+        Assert.assertEquals("Validation warnings/errors were found.", 
+                0, appender.getCount());
+    }    
 }
