@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,15 +49,24 @@ import com.norconex.committer.core.ICommitOperation;
 import com.norconex.committer.core.IDeleteOperation;
 import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.url.QueryString;
 
 /**
+ * <p>
  * Commits documents to HP Autonomy IDOL Server/DIH or HP Autonomy Connector 
  * Framework Server (CFS).   Specifying either the index port or the cfs port
  * determines which of the two will be the documents target.
- * <p>
- * XML configuration usage:
  * </p>
+ * <p>
+ * As of 2.1.1, XML configuration entries expecting millisecond durations
+ * can be provided in human-readable format (English only), as per 
+ * {@link DurationParser} (e.g., "5 minutes and 30 seconds" or "5m30s").
+ * </p> 
+ * 
+ * <h3>
+ * XML configuration usage:
+ * </h3>
  *
  * <pre>
  *   &lt;committer class="com.norconex.committer.idol.IdolCommitter"&gt;
@@ -107,7 +116,7 @@ import com.norconex.commons.lang.url.QueryString;
  *      &lt;queueDir&gt;(optional path where to queue files)&lt;/queueDir&gt;
  *      &lt;queueSize&gt;(max queue size before committing)&lt;/queueSize&gt;
  *      &lt;maxRetries&gt;(max retries upon commit failures)&lt;/maxRetries&gt;
- *      &lt;maxRetryWait&gt;(max delay between retries)&lt;/maxRetryWait&gt;
+ *      &lt;maxRetryWait&gt;(max delay in milliseconds between retries)&lt;/maxRetryWait&gt;
  *   &lt;/committer&gt;
  * </pre>
  *
