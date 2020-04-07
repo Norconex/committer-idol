@@ -14,14 +14,17 @@
  */
 package com.norconex.committer.idol;
 
-import java.io.DataOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,23 +57,23 @@ import com.norconex.commons.lang.url.QueryString;
 
 /**
  * <p>
- * Commits documents to HP Autonomy IDOL Server/DIH or HP Autonomy Connector 
+ * Commits documents to HP Autonomy IDOL Server/DIH or HP Autonomy Connector
  * Framework Server (CFS).   Specifying either the index port or the cfs port
  * determines which of the two will be the documents target.
  * </p>
  * <p>
  * As of 2.1.1, XML configuration entries expecting millisecond durations
- * can be provided in human-readable format (English only), as per 
+ * can be provided in human-readable format (English only), as per
  * {@link DurationParser} (e.g., "5 minutes and 30 seconds" or "5m30s").
- * </p> 
- * 
+ * </p>
+ *
  * <h3>
  * XML configuration usage:
  * </h3>
  *
  * <pre>
  *   &lt;committer class="com.norconex.committer.idol.IdolCommitter"&gt;
- *      
+ *
  *      &lt;!-- To commit documents to IDOL or DIH: --&gt;
  *      &lt;host&gt;(IDOL/DIH host name or IP)&lt;/host&gt;
  *      &lt;indexPort&gt;(IDOL/DIH index port)&lt;/indexPort&gt;
@@ -88,20 +91,20 @@ import com.norconex.commons.lang.url.QueryString;
  *
  *      &lt;!-- Common settings: --&gt;
  *      &lt;sourceReferenceField keep="[false|true]"&gt;
- *         (Optional name of field that contains the document reference, when 
+ *         (Optional name of field that contains the document reference, when
  *         the default document reference is not used.  The reference value
- *         will be mapped to the IDOL "DREREFERENCE" field, or the 
+ *         will be mapped to the IDOL "DREREFERENCE" field, or the
  *         "targetReferenceField" specified.
- *         Once re-mapped, this metadata source field is 
+ *         Once re-mapped, this metadata source field is
  *         deleted, unless "keep" is set to <code>true</code>.)
  *      &lt;/sourceReferenceField&gt;
  *      &lt;targetReferenceField&gt;
- *         (Optional name of IDOL target field where to store the source 
- *         reference. If not specified, default is "DREREFERENCE".) 
+ *         (Optional name of IDOL target field where to store the source
+ *         reference. If not specified, default is "DREREFERENCE".)
  *      &lt;/targetReferenceField&gt;
  *      &lt;sourceContentField keep="[false|true]"&gt;
- *         (If you wish to use a metadata field to act as the document 
- *         "content", you can specify that field here.  Default 
+ *         (If you wish to use a metadata field to act as the document
+ *         "content", you can specify that field here.  Default
  *         does not take a metadata field but rather the document content.
  *         Once re-mapped, the metadata source field is deleted,
  *         unless "keep" is set to <code>true</code>.)
@@ -134,9 +137,9 @@ public class IdolCommitter extends AbstractMappedCommitter {
     public static final String DEFAULT_IDOL_CONTENT_FIELD = "DRECONTENT";
 
     private final Map<String, String> dreAddDataParams =
-            new HashMap<String, String>();
+            new HashMap<>();
     private final Map<String, String> dreDeleteRefParams =
-            new HashMap<String, String>();
+            new HashMap<>();
 
     private String databaseName;
     private String host;
@@ -263,20 +266,20 @@ public class IdolCommitter extends AbstractMappedCommitter {
     @Override
     protected void commitBatch(List<ICommitOperation> batch) {
         // validate settings first
-        if ((cfsPort < 0 && indexPort < 0) 
+        if ((cfsPort < 0 && indexPort < 0)
                 || (cfsPort >= 0 && indexPort >= 0)) {
             throw new CommitterException(
                     "One (and only one) of CFS Port or Index Port must "
                   + "be specified.");
         }
-        
-        List<IAddOperation> additions = new ArrayList<IAddOperation>();
-        List<IDeleteOperation> deletions = new ArrayList<IDeleteOperation>();
+
+        List<IAddOperation> additions = new ArrayList<>();
+        List<IDeleteOperation> deletions = new ArrayList<>();
         for (ICommitOperation op : batch) {
             if (op instanceof IAddOperation) {
-                additions.add((IAddOperation) op); 
+                additions.add((IAddOperation) op);
             } else if (op instanceof IDeleteOperation) {
-                deletions.add((IDeleteOperation) op); 
+                deletions.add((IDeleteOperation) op);
             } else {
                 throw new CommitterException("Unsupported operation:" + op);
             }
@@ -315,15 +318,15 @@ public class IdolCommitter extends AbstractMappedCommitter {
         writer.writeStartElement("cfsPort");
         writer.writeCharacters(Integer.toString(getCfsPort()));
         writer.writeEndElement();
-        
+
         writer.writeStartElement("indexPort");
         writer.writeCharacters(Integer.toString(getIndexPort()));
         writer.writeEndElement();
-        
+
         writer.writeStartElement("databaseName");
         writer.writeCharacters(getDatabaseName());
         writer.writeEndElement();
-        
+
         writer.writeStartElement("dreAddDataParams");
         for (String key : dreAddDataParams.keySet()) {
             writer.writeStartElement("param");
@@ -361,11 +364,11 @@ public class IdolCommitter extends AbstractMappedCommitter {
                 appendField(
                         sb, targetIdField, properties.getString(targetIdField));
             }
-            
+
             // Loop thru the list of properties and create idx fields
             // accordingly.
             for (Entry<String, List<String>> entry : properties.entrySet()) {
-                if (!EqualsUtil.equalsAny(entry.getKey(), 
+                if (!EqualsUtil.equalsAny(entry.getKey(),
                         getTargetReferenceField(), getTargetContentField())) {
                     for (String value : entry.getValue()) {
                         appendField(sb, entry.getKey(), value);
@@ -384,7 +387,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
                 sb.append(properties.getString(targetCtntField));
                 sb.append("\n#DREENDDOC ");
             } else {
-                appendField(sb, targetCtntField, 
+                appendField(sb, targetCtntField,
                         properties.getString(targetCtntField));
             }
             sb.append("\n");
@@ -403,13 +406,13 @@ public class IdolCommitter extends AbstractMappedCommitter {
             return;
         }
         if (LOG.isInfoEnabled()) {
-            LOG.info("Sending " + addOperations.size() 
+            LOG.info("Sending " + addOperations.size()
                     + " documents for addition to " + createURL());
         }
-        
+
         StringBuilder b = new StringBuilder();
         b.append(createURL());
-        
+
         if (isCFS()) {
             b.append("action=ingest&adds=");
             StringWriter xml = new StringWriter();
@@ -424,7 +427,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
                 b.append(URLEncoder.encode(xml.toString(), CharEncoding.UTF_8));
             } catch (Exception e) {
                 throw new CommitterException("Cannot create XML.", e);
-            }   
+            }
             postToIDOL(b.toString(), StringUtils.EMPTY);
         } else {
             b.append("DREADDDATA?");
@@ -437,11 +440,11 @@ public class IdolCommitter extends AbstractMappedCommitter {
             postToIDOL(addURL, idxBatch);
         }
         if (LOG.isInfoEnabled()) {
-            LOG.debug("Done sending additions to " + createURL());  
+            LOG.debug("Done sending additions to " + createURL());
         }
     }
 
-    
+
     /**
      * Commits the deletion operations
      * @param deleteOperations deletions
@@ -451,16 +454,16 @@ public class IdolCommitter extends AbstractMappedCommitter {
             return;
         }
         if (LOG.isInfoEnabled()) {
-            LOG.info("Sending " + deleteOperations.size() 
+            LOG.info("Sending " + deleteOperations.size()
                     + " documents for deletion to " + createURL());
         }
-        
+
         String deleteURL = createURL();
         if (isCFS()) {
             deleteURL += "action=ingest&removes="
                     + buildDeleteRefsContent(deleteOperations, ",");
         } else {
-            deleteURL += "DREDELETEREF?Docs=" 
+            deleteURL += "DREDELETEREF?Docs="
                     + buildDeleteRefsContent(deleteOperations, "+")
                     + "&DREDbName=" + getDatabaseName();
             QueryString qs = new QueryString();
@@ -473,9 +476,9 @@ public class IdolCommitter extends AbstractMappedCommitter {
             }
         }
         postToIDOL(deleteURL, StringUtils.EMPTY);
-        
+
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Done sending deletions to " + createURL());   
+            LOG.debug("Done sending deletions to " + createURL());
         }
     }
 
@@ -494,7 +497,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
         sb.append(value);
         sb.append("\"");
     }
-    
+
     /**
      * Creates a HTTP URL connection with the proper Post method and properties.
      * @param url the URL to open
@@ -529,12 +532,14 @@ public class IdolCommitter extends AbstractMappedCommitter {
      */
     private void postToIDOL(String url, String content) {
         HttpURLConnection con = null;
-        DataOutputStream wr = null;
+        Writer w = null;
         try {
             con = createURLConnection(url);
-            wr = new DataOutputStream(con.getOutputStream());
-            wr.writeBytes(content);
-            wr.flush();
+            con.setRequestProperty("Content-Type", "text/plain; charset=utf-8");
+            w = new BufferedWriter(new OutputStreamWriter(
+                    con.getOutputStream(), StandardCharsets.UTF_8));
+            w.write(content);
+            w.flush();
 
             //Get the response
             int responseCode = con.getResponseCode();
@@ -544,14 +549,14 @@ public class IdolCommitter extends AbstractMappedCommitter {
                 LOG.debug("Server Response Code : " + responseCode);
             }
             String response = IOUtils.toString(
-                    con.getInputStream(), CharEncoding.UTF_8);
+                    con.getInputStream(), StandardCharsets.UTF_8);
             if ((isCFS() && !StringUtils.contains(response, "SUCCESS"))
-                    || (!isCFS() 
+                    || (!isCFS()
                             && !StringUtils.contains(response, "INDEXID"))) {
                 throw new CommitterException(
                         "Unexpected HTTP response: " + response);
             }
-            wr.close();
+            w.close();
         } catch (IOException e) {
             throw new CommitterException(
                     "Cannot post content to " + createURL(), e);
@@ -559,7 +564,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
             if (con != null) {
                 con.disconnect();
             }
-            IOUtils.closeQuietly(wr);
+            IOUtils.closeQuietly(w);
         }
     }
 
@@ -580,7 +585,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
         }
         return dels.toString();
     }
-    
+
     private String buildIdxBatchContent(List<IAddOperation> addOperations) {
         StringBuilder  idx = new StringBuilder();
         for (IAddOperation op : addOperations) {
@@ -595,7 +600,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
         idx.append("\n#DREENDDATANOOP\n\n");
         return idx.toString();
     }
-    
+
     private void buildCfsXmlBatchContent(
             XMLStreamWriter writer, List<IAddOperation> addOperations) {
         for (IAddOperation op : addOperations) {
@@ -628,11 +633,11 @@ public class IdolCommitter extends AbstractMappedCommitter {
                         "value", properties.getString(targetIdField));
                 writer.writeEndElement();
             }
-            
+
             // Loop thru the list of properties and create XML fields
             // accordingly.
             for (Entry<String, List<String>> entry : properties.entrySet()) {
-                if (!EqualsUtil.equalsAny(entry.getKey(), 
+                if (!EqualsUtil.equalsAny(entry.getKey(),
                         getTargetReferenceField(), getTargetContentField())) {
                     for (String value : entry.getValue()) {
                         writer.writeStartElement("metadata");
@@ -659,8 +664,8 @@ public class IdolCommitter extends AbstractMappedCommitter {
             IOUtils.closeQuietly(is);
         }
     }
-    
-    
+
+
     private String createURL() {
         StringBuilder url = new StringBuilder();
         // check if the host already has prefix http://
@@ -676,7 +681,7 @@ public class IdolCommitter extends AbstractMappedCommitter {
         url.append("/");
         return url.toString();
     }
-    
+
     private boolean isCFS() {
         return cfsPort > 0;
     }
