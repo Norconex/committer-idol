@@ -134,7 +134,7 @@
       <extension>
         <groupId>org.apache.maven.wagon</groupId>
         <artifactId>wagon-ssh</artifactId>
-        <version>1.0</version>
+        <version>3.3.4</version>
       </extension>
     </extensions>
     <pluginManagement>
@@ -230,6 +230,9 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.10.2</version>
         <configuration>
+          <additionalJOptions>
+              <additionalJOption>&#45;&#45;allow-script-in-comments</additionalJOption>
+          </additionalJOptions>
           <overview>${basedir}/src/main/javadoc/overview.html</overview>
           <show>protected</show>
           <nodeprecated>false</nodeprecated>
@@ -402,6 +405,9 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9.1</version>
         <configuration>
+          <additionalJOptions>
+              <additionalJOption>&#45;&#45;allow-script-in-comments</additionalJOption>
+          </additionalJOptions>
           <overview>${basedir}/src/main/javadoc/overview.html</overview>
           <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
