@@ -239,8 +239,8 @@
           <source>1.7</source>
           <detectLinks>false</detectLinks>
           <links>
-            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
-            <link>https://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
+            <link>https://opensource.norconex.com/commons/lang/v1/apidocs/</link>
+            <link>https://opensource.norconex.com/committers/core/v2/apidocs/</link>
             <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
           </links>
         </configuration>
@@ -412,7 +412,7 @@
           <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
             <span class="siteLink">
-              <a target="_top" href="https://www.norconex.com/collectors/committer-idol">Norconex IDOL Committer</a>
+              <a target="_top" href="https://opensource.norconex.com/committers/idol">Norconex IDOL Committer</a>
             </span>
             ]]>
           </header>
@@ -438,8 +438,8 @@
           <source>1.7</source>
           <detectLinks>false</detectLinks>          
           <links>
-            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
-            <link>https://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
+            <link>https://opensource.norconex.com/commons/lang/v1/apidocs/</link>
+            <link>https://opensource.norconex.com/committers/core/v2/apidocs/</link>
             <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
           </links>
         </configuration>
@@ -484,5 +484,5 @@
         <timezone>-4</timezone>
     </developer>
   </developers>
-  <url>https://www.norconex.com/collectors/committer-idol/</url>
+  <url>https://opensource.norconex.com/committers/idol/</url>
 </project>
