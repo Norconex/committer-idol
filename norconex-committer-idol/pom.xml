@@ -1,5 +1,5 @@
 <!--
-   Copyright 2013-2017 Norconex Inc.
+   Copyright 2013-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -236,8 +236,12 @@
           <source>1.7</source>
           <detectLinks>false</detectLinks>
           <links>
-            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
-            <link>https://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
+          <!-- 
+            <link>https://opensource.norconex.com/commons/lang/v2/apidocs/</link>
+            <link>https://opensource.norconex.com/committers/core/v3/apidocs/</link>
+           -->
+            <link>https://opensource.norconex.com/commons/lang/v1/apidocs/</link>
+            <link>https://opensource.norconex.com/committers/core/v2/apidocs/</link>
             <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
           </links>
         </configuration>
@@ -406,7 +410,7 @@
           <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
             <span class="siteLink">
-              <a target="_top" href="https://www.norconex.com/collectors/committer-idol">Norconex IDOL Committer</a>
+              <a target="_top" href="https://opensource.norconex.com/committers/idol">Norconex IDOL Committer</a>
             </span>
             ]]>
           </header>
@@ -424,7 +428,7 @@
             </script>
             <a style="font-size: 1.4em;" target="_top" href="https://github.com/norconex/committer-idol/issues">Submit an Issue</a>
             &nbsp;&nbsp;|&nbsp;&nbsp; 
-            <a style="font-size: 1.4em;" target="_top" href="https://www.norconex.com">www.norconex.com</a>
+            <a style="font-size: 1.4em;" target="_top" href="https://norconex.com">norconex.com</a>
             ]]>
           </footer>
           <show>protected</show>
@@ -432,8 +436,12 @@
           <source>1.7</source>
           <detectLinks>false</detectLinks>          
           <links>
-            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
-            <link>https://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
+          <!-- 
+            <link>https://opensource.norconex.com/commons/lang/v2/apidocs/</link>
+            <link>https://opensource.norconex.com/committers/core/v3/apidocs/</link>
+           -->
+            <link>https://opensource.norconex.com/commons/lang/v1/apidocs/</link>
+            <link>https://opensource.norconex.com/committers/core/v2/apidocs/</link>
             <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
           </links>
         </configuration>
@@ -453,7 +461,7 @@
 
   <organization>
     <name>Norconex Inc.</name>
-    <url>https://www.norconex.com</url>
+    <url>https://norconex.com</url>
   </organization>
   <scm>
     <url>https://github.com/Norconex/committer-idol</url>
@@ -470,7 +478,7 @@
         <name>Pascal Essiembre</name>
         <email>pascal.essiembre@norconex.com</email>
         <organization>Norconex Inc.</organization>
-        <organizationUrl>https://www.norconex.com</organizationUrl>
+        <organizationUrl>https://norconex.com</organizationUrl>
         <roles>
           <role>project leader</role>
           <role>developer</role>
@@ -478,5 +486,5 @@
         <timezone>-4</timezone>
     </developer>
   </developers>
-  <url>https://www.norconex.com/collectors/committer-idol/</url>
+  <url>https://opensource.norconex.com/committers/idol/</url>
 </project>

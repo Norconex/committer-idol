@@ -8,7 +8,7 @@ For any inquiries about Norconex IDOL Committer, please contact
 Norconex Inc. at info@norconex.com.
 
 This product website and documentation is located at:
-https://www.norconex.com/collectors/committer-idol
+https://opensource.norconex.com/committers/idol
 
 Norconex licenses:
 ==================
