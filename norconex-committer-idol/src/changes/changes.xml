@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="2.2.1-SNAPSHOT" date="2020-??-??" description="Bugfix release">
+      <action dev="essiembre" type="fix" issue="2">
+        Fixed invalid charset when sending directly to IDOL.
+      </action>
+    </release>
+
     <release version="2.2.0" date="2017-04-25" description="Feature release">
       <action dev="essiembre" type="add">
         Added schema-based XML configuration validation.
