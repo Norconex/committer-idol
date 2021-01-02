@@ -1,5 +1,5 @@
 Norconex IDOL Committer
-Copyright 2010-2020 Norconex Inc.
+Copyright 2010-2021 Norconex Inc.
 
 General Information:
 ====================

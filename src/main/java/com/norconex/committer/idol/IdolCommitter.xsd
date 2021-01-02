@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2017 Norconex Inc.
+   Copyright 2017-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:include schemaLocation="/com/norconex/committer/core/AbstractMappedCommitter.xsd"></xs:include>
+  <xs:include schemaLocation="/com/norconex/committer/core3/batch/AbstractBatchCommitter.xsd"></xs:include>
   
   <xs:element name="committer">
     <xs:complexType>
       <xs:complexContent> 
-        <xs:extension base="AbstractMappedCommitter">
+        <xs:extension base="AbstractBatchCommitter">
           <xs:all>
-            <xs:element name="host" type="xs:string" minOccurs="1" maxOccurs="1" />
-            <xs:element ref="AbstractPort" minOccurs="1" maxOccurs="1" />
+            <xs:element name="url" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="cfs" type="xs:boolean" minOccurs="0" maxOccurs="1" />
             <xs:element name="databaseName" type="xs:string" minOccurs="0" maxOccurs="1" />
             <xs:element name="dreAddDataParams" minOccurs="0" maxOccurs="1">
               <xs:complexType>
@@ -40,15 +40,13 @@
                 </xs:all>
               </xs:complexType>
             </xs:element>
+            <xs:element name="sourceReferenceField" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="sourceContentField" type="xs:string" minOccurs="0" maxOccurs="1" />
           </xs:all>
         </xs:extension> 
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-
-  <xs:element name="AbstractPort" abstract="true"/>
-  <xs:element name="indexPort" substitutionGroup="AbstractPort" type="xs:int" />
-  <xs:element name="cfsPort" substitutionGroup="AbstractPort" type="xs:int" />
 
   <xs:complexType name="paramType">
     <xs:simpleContent>
