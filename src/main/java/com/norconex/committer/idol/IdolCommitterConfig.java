@@ -53,7 +53,7 @@ public class IdolCommitterConfig implements Serializable {
     }
     /**
      * Sets the IDOL index URL (default is <code>http://localhost:9001</code>).
-     * @param url
+     * @param url the IDOL URL
      */
     public void setUrl(String url) {
         this.url = url;
