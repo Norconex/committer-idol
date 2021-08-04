@@ -87,6 +87,7 @@ import com.norconex.commons.lang.xml.XML;
  *
  * @author Pascal Essiembre
  */
+@SuppressWarnings("javadoc")
 public class IdolCommitter extends AbstractBatchCommitter {
 
     private static final Logger LOG =
