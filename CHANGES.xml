@@ -7,14 +7,17 @@
   </properties>
   <body>
 
-    <release version="3.0.0-RC1" date="2021-10-10" 
-        description="Release Candidate 1.">
+    <release version="3.0.0" date="2022-01-04" 
+            description="Major release. NOT a drop-in replacement for 2.x.">
+
+      <!-- 3.0.0-RC1 -->    
+      
       <action dev="essiembre" type="fix">
         Fixed invalid configuration in POM "maven-dependency-plugin".
       </action>
-    </release>
 
-    <release version="3.0.0-M1" date="2021-03-01" description="Feature release">
+      <!-- 3.0.0-M1 -->
+      
       <action dev="essiembre" type="update">
         Major refactor to support Norconex Committer Core 3.x.  Adds ability
         to retry failing batches, perform field mapping, routing, etc. See
