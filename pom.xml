@@ -1,4 +1,4 @@
-﻿<!--
+<!--
    Copyright 2013-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,13 +16,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>com.norconex.collectors.v3</groupId>
+    <groupId>com.norconex.collectors</groupId>
     <artifactId>norconex-collector-parent</artifactId>
-    <version>3.2.0-SNAPSHOT</version>
+    <version>3.2.0</version>
   </parent>
-  <groupId>com.norconex.collectors.v3</groupId>
+  <groupId>com.norconex.collectors</groupId>
   <artifactId>norconex-committer-idol</artifactId>
-  <version>3.2.0-SNAPSHOT</version>
+  <version>3.2.0</version>
   <name>Norconex Committer IDOL</name>
   <description>
     MicroFocus IDOL implementation of Norconex Committer. 
@@ -36,7 +36,7 @@
       <artifactId>norconex-commons-lang</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.norconex.collectors.v3</groupId>
+      <groupId>com.norconex.collectors</groupId>
       <artifactId>norconex-committer-core</artifactId>
     </dependency>
     <dependency>
@@ -80,7 +80,7 @@
                we need to include that dependency here. -->
           <tagletArtifacts combine.children="append">
             <tagletArtifact>
-              <groupId>com.norconex.collectors.v3</groupId>
+              <groupId>com.norconex.collectors</groupId>
               <artifactId>norconex-committer-core</artifactId>
               <version>${project.version}</version>
             </tagletArtifact>
